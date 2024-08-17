@@ -1,50 +1,47 @@
 pipeline {
     agent any
+
     environment {
-        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
-        AWS_REGION = 'ap-southeast-1'  // Replace with your AWS region
-        ECR_REPOSITORY = 'demo'  // Replace with your ECR repository name
-        IMAGE_TAG = 'latest'  // Replace with your desired image tag
+        AWS_CREDENTIALS_ID = 'aws-ecr' // ID của credentials trong Jenkins
     }
+
     stages {
-        stage('Login to AWS ECR') {
+        stage('Clone Code') {
             steps {
-                script {
-                    // Retrieve the login command from ECR and execute it directly
-                    sh '''
-                    $(aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com)
-                    '''
-                }
+                // Clone mã nguồn từ repository
+                git 'https://github.com/dungdt-dev/ecr.git' // Thay thế bằng URL của repository của bạn
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image
-                    sh '''
-                    docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
-                    '''
+                    // Đăng nhập vào Amazon ECR
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}"]]) {
+                        def ecrLogin = sh(script: 'aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com', returnStdout: true).trim()
+                        echo "Logged in to ECR"
+                    }
+
+                    // Build Docker image
+                    sh 'docker build -t demo .'
                 }
             }
         }
+
         stage('Tag Docker Image') {
             steps {
                 script {
-                    // Tag the image with the full ECR repository URI
-                    sh '''
-                    docker tag $ECR_REPOSITORY:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-                    '''
+                    // Tag Docker image
+                    sh 'docker tag demo:latest 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com/demo:latest'
                 }
             }
         }
+
         stage('Push Docker Image to ECR') {
             steps {
                 script {
-                    // Push the Docker image to ECR
-                    sh '''
-                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-                    '''
+                    // Push Docker image to Amazon ECR
+                    sh 'docker push 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com/demo:latest'
                 }
             }
         }
