@@ -1,1 +1,0 @@
-# lambda-as-node-container-image
