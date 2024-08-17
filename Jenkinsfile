@@ -49,9 +49,13 @@ pipeline {
         stage('Lambda pull image') {
                     steps {
                         script {
-                            sh 'aws lambda update-function-code \
-                                  --function-name demo-lambda \
-                                  --image-uri 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com/demo:latest'
+                         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}"]]) {
+                                def ecrLogin = sh(script: 'aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com', returnStdout: true).trim()
+                                echo "Logged in to ECR"
+                                 sh 'aws lambda update-function-code \
+                                      --function-name demo-lambda \
+                                      --image-uri 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com/demo:latest'
+                            }
                         }
                     }
                 }
