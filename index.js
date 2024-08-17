@@ -1,7 +1,34 @@
+const mysql = require('mysql2/promise');
+const fs = require('fs');
+
+const host = process.env.DB_HOST;
+const port = parseInt(process.env.DB_PORT, 10);
+const user = process.env.DB_USER;
+const password = process.env.DB_PASSWORD;
+const database = process.env.DB_NAME;
+
+
 exports.handler = async (event) => {
-    const response = {
+    const connection = await mysql.createConnection({
+        host: host,
+        port: port,
+        user: user,
+        password: password,
+        database: database,
+        ssl: {
+            rejectUnauthorized: true,
+            ca: fs.readFileSync('isrgrootx1.pem')
+        }
+    });
+
+    console.log('Connected to MySQL');
+
+    // Thực hiện truy vấn
+    const [rows, fields] = await connection.execute('SELECT * FROM fortune500_2018_2022  WHERE id = "1" ');
+    console.log(rows);
+
+    return {
         statusCode: 200,
-        body: JSON.stringify('Hello from AWS CLOUD DEMOS!!!'),
+        body: rows,
     };
-    return response;
 };
