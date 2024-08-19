@@ -22,9 +22,9 @@ exports.handler = async (event) => {
     });
 
     console.log('Connected to MySQL');
-
+    let id = parseInt(event?.queryStringParameters?.id) ? parseInt(event?.queryStringParameters?.id) : 1;
     // Thực hiện truy vấn
-    const [rows, fields] = await connection.execute('SELECT * FROM fortune500_2018_2022  WHERE id = "1" ');
+    const [rows, fields] = await connection.execute('SELECT * FROM fortune500_2018_2022  WHERE id = ?', [id]);
     console.log(rows);
 
     return {

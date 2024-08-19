@@ -8,22 +8,14 @@ pipeline {
     stages {
         stage('Clone Code') {
             steps {
-                // Clone mã nguồn từ repository
-                git 'https://github.com/dungdt-dev/ecr.git' // Thay thế bằng URL của repository của bạn
+                sh './clone_code.sh'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Đăng nhập vào Amazon ECR
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}"]]) {
-                        def ecrLogin = sh(script: 'aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com', returnStdout: true).trim()
-                        echo "Logged in to ECR"
-                    }
-
-                    // Build Docker image
-                    sh 'docker build -t demo .'
+                     sh './build_docker_image.sh'
                 }
             }
         }
@@ -32,7 +24,7 @@ pipeline {
             steps {
                 script {
                     // Tag Docker image
-                    sh 'docker tag demo:latest 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com/demo:latest'
+                    sh './set_tag_docker_image.sh'
                 }
             }
         }
@@ -40,18 +32,17 @@ pipeline {
         stage('Push Docker Image to ECR') {
             steps {
                 script {
-                    // Push Docker image to Amazon ECR
-                    sh 'docker push 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com/demo:latest'
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}"]]) {
+                         sh './push_image_to_ecr.sh'
+                    }
                 }
             }
         }
 
-        stage('Lambda pull image') {
+        stage('Get Image to Lambda') {
                     steps {
                         script {
-                            sh 'aws lambda update-function-code \
-                                  --function-name demo-lambda \
-                                  --image-uri 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com/demo:latest --region ap-southeast-1'
+                            sh './get_image_to_lambda.sh'
                         }
                     }
                 }
