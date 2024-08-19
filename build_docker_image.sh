@@ -1,2 +1,1 @@
-
- sh 'docker build -t demo .'
+docker build -t demo .
