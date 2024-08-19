@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        AWS_CREDENTIALS_ID = 'aws-ecr' // ID của credentials trong Jenkins
+        AWS_ECR_CREDENTIALS = 'aws-ecr'
+        AWS_LAMBDA_CREDENTIALS = 'aws-lambda'
     }
 
     stages {
@@ -36,7 +37,7 @@ pipeline {
             steps {
                 script {
                  sh 'chmod +x ./push_image_to_ecr.sh'
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}"]]) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_ECR_CREDENTIALS}"]]) {
                          sh './push_image_to_ecr.sh'
                     }
                 }
@@ -47,7 +48,9 @@ pipeline {
             steps {
                 script {
                     sh 'chmod +x ./get_image_to_lambda.sh'
-                    sh './get_image_to_lambda.sh'
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+                         sh './get_image_to_lambda.sh'
+                    }
                 }
             }
         }
