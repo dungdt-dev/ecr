@@ -29,6 +29,9 @@ exports.handler = async (event) => {
 
     return {
         statusCode: 200,
-        body: rows,
+        body: {
+            rows: rows,
+            content: 'test'
+        },
     };
 };
