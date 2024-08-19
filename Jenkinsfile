@@ -8,6 +8,7 @@ pipeline {
     stages {
         stage('Clone Code') {
             steps {
+                sh 'chmod +x ./clone_code.sh'
                 sh './clone_code.sh'
             }
         }
@@ -15,7 +16,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                     sh './build_docker_image.sh'
+                    sh 'chmod +x ./build_docker_image.sh'
+                    sh './build_docker_image.sh'
                 }
             }
         }
@@ -24,6 +26,7 @@ pipeline {
             steps {
                 script {
                     // Tag Docker image
+                    sh 'chmod +x ./set_tag_docker_image.sh'
                     sh './set_tag_docker_image.sh'
                 }
             }
@@ -32,6 +35,7 @@ pipeline {
         stage('Push Docker Image to ECR') {
             steps {
                 script {
+                 sh 'chmod +x ./push_image_to_ecr.sh'
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}"]]) {
                          sh './push_image_to_ecr.sh'
                     }
@@ -40,11 +44,12 @@ pipeline {
         }
 
         stage('Get Image to Lambda') {
-                    steps {
-                        script {
-                            sh './get_image_to_lambda.sh'
-                        }
-                    }
+            steps {
+                script {
+                    sh 'chmod +x ./get_image_to_lambda.sh'
+                    sh './get_image_to_lambda.sh'
                 }
+            }
+        }
     }
 }
