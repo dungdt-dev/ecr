@@ -60,7 +60,9 @@ pipeline {
                 if (currentBuild.result == 'FAILURE') {
                     sh 'chmod +x ./push_chatwork_message.sh'
                     def body = 'Error stage ' + currentBuild.description
-                    sh "./push_chatwork_message.sh ${env.CHATWORK_API_TOKEN} ${env.CHATWORK_ROOM_ID} ${body}"
+                    sh """
+                           ./push_chatwork_message.sh "${env.CHATWORK_API_TOKEN}" "${env.CHATWORK_ROOM_ID}" "${body}"
+                       """
 //                     switch (currentBuild.description) {
 //                         case 'clone_code':
 //                             echo "Running rollback for clone_code..."
