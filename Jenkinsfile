@@ -35,7 +35,7 @@ pipeline {
                      sh 'chmod +x ./build_and_push_docker_image.sh'
                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_ECR_CREDENTIALS}"]]) {
                         sh """
-                               ./build_and_push_docker_image.sh "${env.ECR_INFO}" "${env.NEW_VERSION_TAG}"
+                               ./build_and_push_docker_image.sh '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
                            """
                      }
                     } catch (Exception e) {
@@ -58,7 +58,7 @@ pipeline {
                      sh 'chmod +x ./get_image_to_lambda.sh'
                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
                         sh """
-                               ./get_image_to_lambda.sh "${env.LIST_LAMBDAS}" "${env.ECR_INFO}" "${env.NEW_VERSION_TAG}"
+                               ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
                            """
                      }
                     } catch (Exception e) {
@@ -77,7 +77,7 @@ pipeline {
                     sh 'chmod +x ./push_chatwork_message.sh'
                     def body = 'Error stage ' + currentBuild.description
                     sh """
-                           ./push_chatwork_message.sh "${env.CHATWORK_CREDENTIAL}" "${body}"
+                           ./push_chatwork_message.sh '${env.CHATWORK_CREDENTIAL}' '${body}'
                        """
 //                     switch (currentBuild.description) {
 //                         case 'build_and_push_docker_image':

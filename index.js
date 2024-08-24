@@ -31,7 +31,7 @@ exports.handler = async (event) => {
         statusCode: 200,
         body: {
             rows: rows,
-            content: 'test pull image env'
+            content: 'test pull image dynamic config'
         },
     };
 };
