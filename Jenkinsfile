@@ -19,6 +19,7 @@ pipeline {
                         env.CURRENT_VERSION = 1
                     }
                     env.NEW_VERSION_TAG = "v${env.CURRENT_VERSION.toInteger() + 1}"
+                    env.OLD_VERSION_TAG = "v${env.CURRENT_VERSION.toInteger()}"
                 }
             }
         }
@@ -40,7 +41,8 @@ pipeline {
                      }
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
-                        currentBuild.description = 'build_and_push_docker_image'
+                        env.ERROR_STAGE = 'build_and_push_docker_image'
+                        env.EXCEPTION_MESSAGE = e.message
                     }
                 }
             }
@@ -58,12 +60,13 @@ pipeline {
                      sh 'chmod +x ./get_image_to_lambda.sh'
                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
                         sh """
-                               ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
+                               ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.OLD_VERSION_TAG}'
                            """
                      }
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
-                        currentBuild.description = 'get_image_to_lambda'
+                        env.ERROR_STAGE = 'get_image_to_lambda'
+                        env.EXCEPTION_MESSAGE = e.message
                     }
                 }
             }
@@ -75,18 +78,20 @@ pipeline {
             script {
                 if (currentBuild.result == 'FAILURE') {
                     sh 'chmod +x ./push_chatwork_message.sh'
-                    def body = 'Error stage ' + currentBuild.description
+                    def body = '[toall]\n Error in stage ' + env.ERROR_STAGE + ': ' + env.EXCEPTION_MESSAGE
                     sh """
                            ./push_chatwork_message.sh '${env.CHATWORK_CREDENTIAL}' '${body}'
                        """
-//                     switch (currentBuild.description) {
-//                         case 'build_and_push_docker_image':
-//                             echo "Running rollback for build_and_push_docker_image..."
-//                             break
-//                         case 'get_image_to_lambda':
-//                             echo "Running rollback for get_image_to_lambda..."
-//                             break
-//                     }
+                    switch (env.ERROR_STAGE) {
+                        case 'get_image_to_lambda':
+                            sh 'chmod +x ./get_image_to_lambda_rollback.sh'
+                             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+                                sh """
+                                       ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
+                                   """
+                             }
+                            break
+                    }
                 } else {
                     script {
                         writeFile file: VERSION_FILE, text: "${env.CURRENT_VERSION.toInteger() + 1}"
