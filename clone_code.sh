@@ -2,7 +2,7 @@
 AWS_ACCESS_KEY_ID="$1"
 
 # Sử dụng giá trị biến môi trường
-echo "AWS_ACCESS_KEY_ID from Jenkins: $AWS_ACCESS_KEY_ID"
+echo "AWS_ACCESS_KEY_ID from Jenkins : $AWS_ACCESS_KEY_ID"
 
 if [ -d "ecr" ]; then
     cd ecr

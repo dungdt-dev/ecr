@@ -34,8 +34,8 @@ pipeline {
                         currentBuild.description = 'build_and_push_docker_image'
                     }
                 }
-            } */
-        }
+            }
+        }*/
 
         /* stage('Get Image to Lambda') {
             steps {
