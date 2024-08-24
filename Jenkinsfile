@@ -4,54 +4,56 @@ pipeline {
     environment {
         AWS_ECR_CREDENTIALS = 'aws-ecr'
         AWS_LAMBDA_CREDENTIALS = 'aws-lambda'
+        VERSION_FILE = 'version.txt'
     }
 
     stages {
-        stage('Clone Code') {
+        stage('Get Current Version') {
             steps {
-            script {
+                script {
+                    if (fileExists(VERSION_FILE)) {
+                        def versionText = readFile(VERSION_FILE).trim()
+                        def version = versionText.isInteger() ? versionText.toInteger() : 1
+                        env.CURRENT_VERSION = version
+                    } else {
+                        env.CURRENT_VERSION = 1
+                    }
+                    env.NEW_VERSION_TAG = "v${env.CURRENT_VERSION.toInteger() + 1}"
+                }
+            }
+        }
+
+        stage('Build And Push Docker Image') {
+            steps {
+                script {
                     try {
-                     sh 'chmod +x ./clone_code.sh'
-                     sh "./clone_code1.sh"
+                     sh 'chmod +x ./build_and_push_docker_image.sh'
+                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_ECR_CREDENTIALS}"]]) {
+                        sh "./build_and_push_docker_image.sh ${env.NEW_VERSION_TAG}"
+                     }
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
-                        currentBuild.description = 'clone_code'
+                        currentBuild.description = 'build_and_push_docker_image'
                     }
                 }
             }
         }
 
-//         stage('Build And Push Docker Image') {
-//             steps {
-//                 script {
-//                     try {
-//                      sh 'chmod +x ./build_and_push_docker_image.sh'
-//                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_ECR_CREDENTIALS}"]]) {
-//                         sh './build_and_push_docker_image.sh'
-//                      }
-//                     } catch (Exception e) {
-//                         currentBuild.result = 'FAILURE'
-//                         currentBuild.description = 'build_and_push_docker_image'
-//                     }
-//                 }
-//             }
-//         }
-//
-//         stage('Get Image to Lambda') {
-//             steps {
-//                 script {
-//                     try {
-//                      sh 'chmod +x ./get_image_to_lambda.sh'
-//                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-//                         sh './get_image_to_lambda.sh'
-//                      }
-//                     } catch (Exception e) {
-//                         currentBuild.result = 'FAILURE'
-//                         currentBuild.description = 'get_image_to_lambda'
-//                     }
-//                 }
-//             }
-//         }
+        stage('Get Image to Lambda') {
+            steps {
+                script {
+                    try {
+                     sh 'chmod +x ./get_image_to_lambda.sh'
+                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+                        sh './get_image_to_lambda.sh'
+                     }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        currentBuild.description = 'get_image_to_lambda'
+                    }
+                }
+            }
+        }
     }
 
     post {
@@ -64,9 +66,6 @@ pipeline {
                            ./push_chatwork_message.sh "${env.CHATWORK_API_TOKEN}" "${env.CHATWORK_ROOM_ID}" "${body}"
                        """
 //                     switch (currentBuild.description) {
-//                         case 'clone_code':
-//                             echo "Running rollback for clone_code..."
-//                             break
 //                         case 'build_and_push_docker_image':
 //                             echo "Running rollback for build_and_push_docker_image..."
 //                             break
