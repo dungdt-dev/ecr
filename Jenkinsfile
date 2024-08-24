@@ -13,10 +13,10 @@ pipeline {
                 script {
                     if (fileExists(VERSION_FILE)) {
                         def versionText = readFile(VERSION_FILE).trim()
-                        def version = versionText.isInteger() ? versionText.toInteger() : 1
+                        def version = versionText.isInteger() ? versionText.toInteger() : 0
                         env.CURRENT_VERSION = version
                     } else {
-                        env.CURRENT_VERSION = 1
+                        env.CURRENT_VERSION = 0
                     }
                     env.NEW_VERSION_TAG = "v${env.CURRENT_VERSION.toInteger() + 1}"
                     env.OLD_VERSION_TAG = "v${env.CURRENT_VERSION.toInteger()}"
@@ -84,12 +84,12 @@ pipeline {
                        """
                     switch (env.ERROR_STAGE) {
                         case 'get_image_to_lambda':
-                            sh 'chmod +x ./get_image_to_lambda_rollback.sh'
-                             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-                                sh """
-                                       ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
-                                   """
-                             }
+//                             sh 'chmod +x ./get_image_to_lambda.sh'
+//                              withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+//                                 sh """
+//                                        ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.OLD_VERSION_TAG}'
+//                                    """
+//                              }
                             break
                     }
                 } else {
