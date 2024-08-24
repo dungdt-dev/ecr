@@ -12,8 +12,8 @@ IFS=',' read -r -a array <<< "$LIST_LAMBDAS"
 for element in "${array[@]}"
 do
     IFS=':' read -r -a lambda <<< "$element"
-    name="${lambda[0]}"
-    region="${lambda[1]}"
+    name=${lambda[0]}
+    region=${lambda[1]}
 
    aws lambda update-function-code \
    --function-name $name \
