@@ -1,7 +1,7 @@
 NEW_VERSION_TAG="$1"
 
 #build
-docker build -t demo .
+docker build -t demo:${NEW_VERSION_TAG} .
 
 #Set tag
 docker tag demo:${NEW_VERSION_TAG} 022499014177.dkr.ecr.ap-southeast-1.amazonaws.com/demo:${NEW_VERSION_TAG}

@@ -73,6 +73,10 @@ pipeline {
 //                             echo "Running rollback for get_image_to_lambda..."
 //                             break
 //                     }
+                } else {
+                    script {
+                        writeFile file: VERSION_FILE, text: "${env.CURRENT_VERSION.toInteger() + 1}"
+                    }
                 }
             }
         }
