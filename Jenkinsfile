@@ -24,6 +24,11 @@ pipeline {
         }
 
         stage('Build And Push Docker Image') {
+            when {
+                expression {
+                    return currentBuild.result != 'FAILURE'
+                }
+            }
             steps {
                 script {
                     try {
@@ -40,6 +45,11 @@ pipeline {
         }
 
         stage('Get Image to Lambda') {
+            when {
+                expression {
+                    return currentBuild.result != 'FAILURE'
+                }
+            }
             steps {
                 script {
                     try {
