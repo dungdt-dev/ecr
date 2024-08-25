@@ -96,9 +96,9 @@ pipeline {
                                  def jsonContent = readFile(successLambdasFile)
 
                                  // Xây dựng nội dung body với JSON data
-                                 def body = "[toall]\n Rollback error: ${jsonContent}"
+                                 def bodyMessageRollback = "[toall]\n Rollback error: ${jsonContent}"
                                  sh """
-                                        ./push_chatwork_message.sh '${env.CHATWORK_CREDENTIAL}' '${body}'
+                                        ./push_chatwork_message.sh '${env.CHATWORK_CREDENTIAL}' '${bodyMessageRollback}'
                                     """
                              }
                             break
