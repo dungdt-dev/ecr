@@ -13,6 +13,19 @@ if [ -f "success_lambdas.json" ]; then
         name=$(echo "$lambda" | jq -r '.name')
         region=$(echo "$lambda" | jq -r '.region')
 
+        status=$(aws lambda get-function \
+                    --function-name $name \
+                    --region $region | jq -r '.Configuration.LastUpdateStatus')
+
+        if [ "$status" == "InProgress" ]; then
+            while [ "$status" == "InProgress" ]; do
+                sleep 10
+                status=$(aws lambda get-function \
+                            --function-name $name \
+                            --region $region | jq -r '.Configuration.LastUpdateStatus')
+            done
+        fi
+
         aws lambda update-function-code \
            --function-name $name \
            --image-uri ${ECR_URI}/${IMAGE_NAME}:${OLD_VERSION_TAG} --region $region || exit 1
