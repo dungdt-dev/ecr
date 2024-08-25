@@ -89,7 +89,7 @@ pipeline {
                             try {
                                  withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
                                     sh """
-                                           ./rollback_image_to_lambda.sh ${env.ECR_INFO}' '${env.OLD_VERSION_TAG}'
+                                           ./rollback_image_to_lambda.sh '${env.ECR_INFO}' '${env.OLD_VERSION_TAG}'
                                        """
                                  }
                              } catch (Exception e) {
