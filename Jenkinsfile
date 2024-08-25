@@ -76,6 +76,7 @@ pipeline {
     post {
         always {
             script {
+                def successLambdasFile = 'success_lambdas.json'
                 if (currentBuild.result == 'FAILURE') {
                     sh 'chmod +x ./push_chatwork_message.sh'
                     def body = '[toall]\n Error in stage ' + env.ERROR_STAGE + ': ' + env.EXCEPTION_MESSAGE
@@ -84,12 +85,22 @@ pipeline {
                        """
                     switch (env.ERROR_STAGE) {
                         case 'get_image_to_lambda':
-//                             sh 'chmod +x ./get_image_to_lambda.sh'
-//                              withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-//                                 sh """
-//                                        ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.OLD_VERSION_TAG}'
-//                                    """
-//                              }
+                            sh 'chmod +x ./get_image_to_lambda.sh'
+                            try {
+                                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+                                    sh """
+                                           ./get_image_to_lambda.sh ${env.ECR_INFO}' '${env.OLD_VERSION_TAG}'
+                                       """
+                                 }
+                             } catch (Exception e) {
+                                 def jsonContent = readFile(successLambdasFile)
+
+                                 // Xây dựng nội dung body với JSON data
+                                 def body = "[toall]\n Rollback error: ${jsonContent}"
+                                 sh """
+                                        ./push_chatwork_message.sh '${env.CHATWORK_CREDENTIAL}' '${body}'
+                                    """
+                             }
                             break
                     }
                 } else {
@@ -97,6 +108,11 @@ pipeline {
                         writeFile file: VERSION_FILE, text: "${env.CURRENT_VERSION.toInteger() + 1}"
                     }
                 }
+
+                if (fileExists(successLambdasFile)) {
+                    sh "rm ${successLambdasFile}"
+                }
+
             }
         }
     }

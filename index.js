@@ -31,7 +31,7 @@ exports.handler = async (event) => {
         statusCode: 200,
         body: {
             rows: rows,
-            content: 'test pull image dynamic v4'
+            content: 'test pull image dynamic v8'
         },
     };
 };
