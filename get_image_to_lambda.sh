@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 LIST_LAMBDAS="$1"
 ECR="$2"
 NEW_VERSION_TAG="$3"
@@ -17,7 +19,7 @@ for lambda in "${lambdas[@]}"; do
 
     aws lambda update-function-code \
        --function-name $name \
-       --image-uri ${ECR_URI}/${IMAGE_NAME}:${NEW_VERSION_TAG} --region $region
+       --image-uri ${ECR_URI}/${IMAGE_NAME}:${NEW_VERSION_TAG} --region $region || exit 1
 
     successfulUpdates+=("$lambda")
     successfulUpdatesJson=$(printf '%s\n' "${successfulUpdates[@]}" | jq -s '.')

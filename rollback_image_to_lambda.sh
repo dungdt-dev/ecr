@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 ECR="$1"
 OLD_VERSION_TAG="$2"
 ECR_URI=$(echo "$ECR" | jq -r '.ecr_uri')
@@ -13,6 +15,6 @@ if [ -f "success_lambdas.json" ]; then
 
         aws lambda update-function-code \
            --function-name $name \
-           --image-uri ${ECR_URI}/${IMAGE_NAME}:${OLD_VERSION_TAG} --region $region
+           --image-uri ${ECR_URI}/${IMAGE_NAME}:${OLD_VERSION_TAG} --region $region || exit 1
     done
 fi
