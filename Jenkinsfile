@@ -60,7 +60,7 @@ pipeline {
                      sh 'chmod +x ./get_image_to_lambda.sh'
                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
                         sh """
-                               ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.OLD_VERSION_TAG}'
+                               ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
                            """
                      }
                     } catch (Exception e) {
