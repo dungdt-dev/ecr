@@ -85,11 +85,11 @@ pipeline {
                        """
                     switch (env.ERROR_STAGE) {
                         case 'get_image_to_lambda':
-                            sh 'chmod +x ./get_image_to_lambda.sh'
+                            sh 'chmod +x ./rollback_image_to_lambda.sh'
                             try {
                                  withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
                                     sh """
-                                           ./get_image_to_lambda.sh ${env.ECR_INFO}' '${env.OLD_VERSION_TAG}'
+                                           ./rollback_image_to_lambda.sh ${env.ECR_INFO}' '${env.OLD_VERSION_TAG}'
                                        """
                                  }
                              } catch (Exception e) {
