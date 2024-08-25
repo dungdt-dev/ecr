@@ -13,16 +13,18 @@ if [ -f "success_lambdas.json" ]; then
         name=$(echo "$lambda" | jq -r '.name')
         region=$(echo "$lambda" | jq -r '.region')
 
+        sleep 10
+
         status=$(aws lambda get-function \
                     --function-name $name \
-                    --region $region | jq -r '.Configuration.LastUpdateStatus')
+                    --region $region | jq -r '.Configuration.LastUpdateStatus') || exit 1
 
         if [ "$status" == "InProgress" ]; then
             while [ "$status" == "InProgress" ]; do
                 sleep 10
                 status=$(aws lambda get-function \
                             --function-name $name \
-                            --region $region | jq -r '.Configuration.LastUpdateStatus')
+                            --region $region | jq -r '.Configuration.LastUpdateStatus') || exit 1
             done
         fi
 
