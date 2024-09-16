@@ -40,5 +40,6 @@ docker exec ${IMAGE_NAME} sh -c "
             fi
             " || exit 1
 
-docker rm -f ${IMAGE_NAME} || true
+docker rm -f ${IMAGE_NAME}
+docker rmi ${IMAGE_NAME}:${NEW_VERSION_TAG}
 rm -rf build/
