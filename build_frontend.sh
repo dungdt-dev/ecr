@@ -31,9 +31,13 @@ docker exec ${IMAGE_NAME} sh -c "
 						cd /var/task &&
 						cp -r build/* deploy/ &&
 						cd deploy &&
-						git add . &&
-						git commit -m '${NEW_VERSION_TAG}' &&
-						git push
-                    " || exit 1
+						if [ -n \"\$(git status --porcelain)\" ]; then
+              git add . &&
+              git commit -m '${NEW_VERSION_TAG}' &&
+              git push
+            else
+                echo 'No changes to commit'
+            fi
+            " || exit 1
 
 docker rm -f ${IMAGE_NAME} || true
