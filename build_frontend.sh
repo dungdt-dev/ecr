@@ -41,3 +41,4 @@ docker exec ${IMAGE_NAME} sh -c "
             " || exit 1
 
 docker rm -f ${IMAGE_NAME} || true
+rm -rf build/
