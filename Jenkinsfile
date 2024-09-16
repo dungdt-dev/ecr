@@ -154,7 +154,7 @@ pipeline {
                  def isImageTagExist = sh(script: "docker images -q ${fullImageTag}", returnStdout: true).trim()
                   if (isImageTagExist) {
                       echo "Image with tag ${isImageTagExist} exists. Removing image..."
-                      sh "docker rmi ${fullImageName}"
+                      sh "docker rmi ${isImageTagExist}"
                   }
             }
         }
