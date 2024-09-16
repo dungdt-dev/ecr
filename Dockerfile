@@ -1,5 +1,8 @@
 FROM public.ecr.aws/lambda/nodejs:20
 
+# Install Git
+RUN dnf install -y git
+
 # Copy function code
 COPY . ${LAMBDA_TASK_ROOT}
 # install git + config ssh key +
