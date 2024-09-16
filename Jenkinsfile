@@ -138,6 +138,24 @@ pipeline {
                     sh "rm ${successLambdasFile}"
                 }
 
+                 // Kiểm tra nếu image tồn tại và xóa image với tag cụ thể
+                 def imageName = sh(script: 'echo "${ECR_INFO}" | jq -r \'.name\'', returnStdout: true).trim()
+                 def imageVersion = "v${env.CURRENT_VERSION.toInteger() - 1}"
+                 def fullImageName = "${imageName}:${imageVersion}"
+
+                 def isImageExist = sh(script: "docker images -q ${fullImageName}", returnStdout: true).trim()
+                 if (isImageExist) {
+                     echo "Image with tag ${fullImageName} exists. Removing image..."
+                     sh "docker rmi ${fullImageName}"
+                 }
+
+                 def imageTag = sh(script: 'echo "${ECR_INFO}" | jq -r \'.ecr_uri\'', returnStdout: true).trim()
+                 def fullImageTag = "${imageTag}/${imageName}:${imageVersion}"
+                 def isImageTagExist = sh(script: "docker images -q ${fullImageTag}", returnStdout: true).trim()
+                  if (isImageTagExist) {
+                      echo "Image with tag ${isImageTagExist} exists. Removing image..."
+                      sh "docker rmi ${fullImageName}"
+                  }
             }
         }
     }
