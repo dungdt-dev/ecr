@@ -83,7 +83,7 @@ pipeline {
                     try {
                      sh 'chmod +x ./build_frontend.sh'
                         sh """
-                               ./build_frontend.sh '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
+                               ./build_frontend.sh '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}' '${env.GIT_INFO}'
                            """
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
