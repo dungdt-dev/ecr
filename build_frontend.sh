@@ -39,4 +39,4 @@ docker exec ${IMAGE_NAME} sh -c "
 
 docker rm -f ${IMAGE_NAME}
 docker rmi ${IMAGE_NAME}:${NEW_VERSION_TAG}
-#rm -rf build/
+rm -rf build/
