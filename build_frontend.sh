@@ -1,6 +1,5 @@
 #!/bin/bash
 ECR="$1"
-ECR_URI=$(echo "$ECR" | jq -r '.ecr_uri')
 IMAGE_NAME=$(echo "$ECR" | jq -r '.name')
 REGION=$(echo "$ECR" | jq -r '.region')
 

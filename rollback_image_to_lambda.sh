@@ -28,8 +28,9 @@ if [ -f "success_lambdas.json" ]; then
             done
         fi
 
+        NEW_ECR_URI=$(echo $ECR_URI | sed "s/ap-northeast-1/$region/")
         aws lambda update-function-code \
            --function-name $name \
-           --image-uri ${ECR_URI}/${IMAGE_NAME}:${OLD_VERSION_TAG} --region $region || exit 1
+           --image-uri ${NEW_ECR_URI}/${IMAGE_NAME}:${OLD_VERSION_TAG} --region $region || exit 1
     done
 fi
