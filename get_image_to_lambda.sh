@@ -17,7 +17,7 @@ for lambda in "${lambdas[@]}"; do
     name=$(echo "$lambda" | jq -r '.name')
     region=$(echo "$lambda" | jq -r '.region')
 
-    NEW_ECR_URI=$(echo $ECR_URI | sed "s/ap-northeast-1/$region/")
+    NEW_ECR_URI=$(echo $ECR_URI | sed "s/ap-southeast-1/$region/")
     aws lambda update-function-code \
        --function-name $name \
        --image-uri ${NEW_ECR_URI}/${IMAGE_NAME}:${NEW_VERSION_TAG} --region $region || exit 1
