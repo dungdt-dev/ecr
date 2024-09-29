@@ -11,6 +11,9 @@ USER_EMAIL=$(echo "$GIT" | jq -r '.email')
 REMOTE_ORIGIN=$(echo "$GIT" | jq -r '.remote_origin')
 BRANCH=$(echo "$GIT" | jq -r '.branch')
 
+# restore
+git checkout .
+
 docker run -it -d --name ${IMAGE_NAME} ${IMAGE_NAME}:${NEW_VERSION_TAG} sh
 
 docker exec ${IMAGE_NAME} sh -c "
@@ -38,4 +41,3 @@ docker exec ${IMAGE_NAME} sh -c "
 
 docker rm -f ${IMAGE_NAME}
 docker rmi ${IMAGE_NAME}:${NEW_VERSION_TAG}
-rm -rf build/

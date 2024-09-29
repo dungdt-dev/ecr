@@ -5,7 +5,10 @@ ECR_URI=$(echo "$ECR" | jq -r '.ecr_uri')
 IMAGE_NAME=$(echo "$ECR" | jq -r '.name')
 REGION=$(echo "$ECR" | jq -r '.region')
 
-#build
+#Remove front end
+rm -rf build/
+
+#Build
 docker build -t ${IMAGE_NAME}:${NEW_VERSION_TAG} .
 
 #Set tag
@@ -16,3 +19,6 @@ aws ecr get-login-password --region ${REGION} | docker login --username AWS --pa
 
 #Push Docker image to Amazon ECR
 docker push ${ECR_URI}/${IMAGE_NAME}:${NEW_VERSION_TAG}
+
+#Remove image
+docker rmi ${IMAGE_NAME}:${NEW_VERSION_TAG}

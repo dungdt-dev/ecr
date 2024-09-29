@@ -24,55 +24,6 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            when {
-                expression {
-                    return currentBuild.result != 'FAILURE'
-                }
-            }
-            steps {
-                script {
-                    try {
-                     sh 'chmod +x ./build_docker_image.sh'
-                      sh """
-                            ./build_docker_image.sh '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
-                        """
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        env.ERROR_STAGE = 'build_docker_image'
-                        env.EXCEPTION_MESSAGE = e.message
-                    }
-                }
-            }
-        }
-
-        stage('Build Frontend') {
-            when {
-                expression {
-                    return currentBuild.result != 'FAILURE'
-                }
-            }
-            steps {
-                script {
-                    try {
-                     sh 'chmod +x ./build_frontend.sh'
-                        sh """
-                               ./build_frontend.sh '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}' '${env.GIT_INFO}'
-                           """
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        env.ERROR_STAGE = 'build_frontend'
-                        env.EXCEPTION_MESSAGE = e.message
-                        def imageName = sh(script: 'echo "${ECR_INFO}" | jq -r \'.name\'', returnStdout: true).trim()
-                        sh "docker rm -f ${imageName}"
-
-                        def fullImageName = "${imageName}:${env.NEW_VERSION_TAG}"
-                        sh "docker rmi ${fullImageName}"
-                    }
-                }
-            }
-        }
-
         stage('Build And Push Docker Image') {
             when {
                 expression {
@@ -116,6 +67,56 @@ pipeline {
                         currentBuild.result = 'FAILURE'
                         env.ERROR_STAGE = 'get_image_to_lambda'
                         env.EXCEPTION_MESSAGE = e.message
+                    }
+                }
+            }
+        }
+
+
+        stage('Build Docker Image') {
+            when {
+                expression {
+                    return currentBuild.result != 'FAILURE'
+                }
+            }
+            steps {
+                script {
+                    try {
+                     sh 'chmod +x ./build_docker_image.sh'
+                      sh """
+                            ./build_docker_image.sh '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
+                        """
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        env.ERROR_STAGE = 'build_docker_image'
+                        env.EXCEPTION_MESSAGE = e.message
+                    }
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            when {
+                expression {
+                    return currentBuild.result != 'FAILURE'
+                }
+            }
+            steps {
+                script {
+                    try {
+                     sh 'chmod +x ./build_frontend.sh'
+                        sh """
+                               ./build_frontend.sh '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}' '${env.GIT_INFO}'
+                           """
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        env.ERROR_STAGE = 'build_frontend'
+                        env.EXCEPTION_MESSAGE = e.message
+                        /* def imageName = sh(script: 'echo "${ECR_INFO}" | jq -r \'.name\'', returnStdout: true).trim()
+                        sh "docker rm -f ${imageName}"
+
+                        def fullImageName = "${imageName}:${env.NEW_VERSION_TAG}"
+                        sh "docker rmi ${fullImageName}" */
                     }
                 }
             }
