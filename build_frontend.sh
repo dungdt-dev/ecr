@@ -32,7 +32,7 @@ exec_result=$(docker exec ${IMAGE_NAME} sh -c "
 						git fetch &&
 						git checkout ${BRANCH} &&
 						cd /var/task &&
-						cp -r build/* deploy/ &&
+						cp -r build1/* deploy/ &&
 						cd deploy &&
 						if [ -n \"\$(git status --porcelain)\" ]; then
               git add . &&
