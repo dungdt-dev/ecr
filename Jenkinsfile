@@ -24,7 +24,7 @@ pipeline {
             }
         }
 
-        /* stage('Build And Push Docker Image') {
+        stage('Build And Push Docker Image') {
             when {
                 expression {
                     return currentBuild.result != 'FAILURE'
@@ -35,9 +35,9 @@ pipeline {
                     try {
                      sh 'chmod +x ./build_and_push_docker_image.sh'
                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_ECR_CREDENTIALS}"]]) {
-                        sh """
+                        /* sh """
                                ./build_and_push_docker_image.sh '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
-                           """
+                           """ */
                      }
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
@@ -46,9 +46,9 @@ pipeline {
                     }
                 }
             }
-        } */
+        }
 
-        /* stage('Get Image to Lambda') {
+        stage('Get Image to Lambda') {
             when {
                 expression {
                     return currentBuild.result != 'FAILURE'
@@ -59,9 +59,9 @@ pipeline {
                     try {
                      sh 'chmod +x ./get_image_to_lambda.sh'
                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-                        sh """
+                        /* sh """
                                ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
-                           """
+                           """ */
                      }
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
@@ -70,7 +70,7 @@ pipeline {
                     }
                 }
             }
-        } */
+        }
 
 
         /* stage(' ') {
@@ -127,7 +127,7 @@ pipeline {
     post {
         always {
             script {
-                /* def successLambdasFile = 'success_lambdas.json'
+                def successLambdasFile = 'success_lambdas.json'
                 if (currentBuild.result == 'FAILURE') {
                     sh 'chmod +x ./push_chatwork_message.sh'
                     def body = '[toall]\n Error in stage ' + env.ERROR_STAGE + ': ' + env.EXCEPTION_MESSAGE
@@ -181,7 +181,7 @@ pipeline {
                   if (isImageTagExist) {
                       echo "Image with tag ${isImageTagExist} exists. Removing image..."
                       sh "docker rmi ${isImageTagExist}"
-                  } */
+                  }
             }
         }
     }
