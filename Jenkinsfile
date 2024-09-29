@@ -73,7 +73,7 @@ pipeline {
         }
 
 
-        stage('Build Docker Image') {
+        /* stage('Build Docker Image') {
             when {
                 expression {
                     return currentBuild.result != 'FAILURE'
@@ -93,7 +93,7 @@ pipeline {
                     }
                 }
             }
-        }
+        } */
 
         stage('Build Frontend') {
             when {
