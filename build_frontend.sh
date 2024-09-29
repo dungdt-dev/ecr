@@ -49,5 +49,6 @@ docker rmi ${IMAGE_NAME}:${NEW_VERSION_TAG}
 
 # error
 if [ $? -ne 0 ]; then
-    exit 1
+    echo "Error occurred during docker exec: $exec_result"
+        exit 1
 fi
