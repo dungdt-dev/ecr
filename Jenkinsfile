@@ -73,7 +73,7 @@ pipeline {
         }
 
 
-        /* stage('Build Docker Image') {
+        /* stage(' ') {
             when {
                 expression {
                     return currentBuild.result != 'FAILURE'

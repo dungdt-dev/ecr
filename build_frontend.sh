@@ -20,7 +20,7 @@ docker build -t ${IMAGE_NAME}:${NEW_VERSION_TAG} .
 
 docker run -it -d --name ${IMAGE_NAME} ${IMAGE_NAME}:${NEW_VERSION_TAG} sh
 
-docker exec ${IMAGE_NAME} sh -c "
+exec_result=$(docker exec ${IMAGE_NAME} sh -c "
 						git config --global init.defaultBranch master &&
 						mkdir deploy &&
                         cd deploy &&
@@ -41,7 +41,13 @@ docker exec ${IMAGE_NAME} sh -c "
             else
                 echo 'No changes to commit'
             fi
-            " || exit 1
+            ")
 
 docker rm -f ${IMAGE_NAME}
 docker rmi ${IMAGE_NAME}:${NEW_VERSION_TAG}
+
+
+# error
+if [ $? -ne 0 ]; then
+    exit 1
+fi
