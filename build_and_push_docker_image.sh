@@ -21,4 +21,4 @@ aws ecr get-login-password --region ${REGION} | docker login --username AWS --pa
 docker push ${ECR_URI}/${IMAGE_NAME}:${NEW_VERSION_TAG}
 
 #Remove image
-docker rmi ${IMAGE_NAME}:${NEW_VERSION_TAG}
+#docker rmi ${IMAGE_NAME}:${NEW_VERSION_TAG}
