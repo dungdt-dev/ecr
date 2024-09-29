@@ -35,9 +35,9 @@ pipeline {
                     try {
                      sh 'chmod +x ./build_and_push_docker_image.sh'
                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_ECR_CREDENTIALS}"]]) {
-                        /* sh """
+                        sh """
                                ./build_and_push_docker_image.sh '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
-                           """ */
+                           """
                      }
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
@@ -59,9 +59,9 @@ pipeline {
                     try {
                      sh 'chmod +x ./get_image_to_lambda.sh'
                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-                        /* sh """
+                        sh """
                                ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
-                           """ */
+                           """
                      }
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
@@ -71,29 +71,6 @@ pipeline {
                 }
             }
         }
-
-
-        /* stage(' ') {
-            when {
-                expression {
-                    return currentBuild.result != 'FAILURE'
-                }
-            }
-            steps {
-                script {
-                    try {
-                     sh 'chmod +x ./build_docker_image.sh'
-                      sh """
-                            ./build_docker_image.sh '${env.ECR_INFO}' '${env.NEW_VERSION_TAG}'
-                        """
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        env.ERROR_STAGE = 'build_docker_image'
-                        env.EXCEPTION_MESSAGE = e.message
-                    }
-                }
-            }
-        } */
 
         stage('Build Frontend') {
             when {
@@ -112,11 +89,6 @@ pipeline {
                         currentBuild.result = 'FAILURE'
                         env.ERROR_STAGE = 'build_frontend'
                         env.EXCEPTION_MESSAGE = e.message
-                        /* def imageName = sh(script: 'echo "${ECR_INFO}" | jq -r \'.name\'', returnStdout: true).trim()
-                        sh "docker rm -f ${imageName}"
-
-                        def fullImageName = "${imageName}:${env.NEW_VERSION_TAG}"
-                        sh "docker rmi ${fullImageName}" */
                     }
                 }
             }
@@ -163,25 +135,6 @@ pipeline {
                 if (fileExists(successLambdasFile)) {
                     sh "rm ${successLambdasFile}"
                 }
-
-                 // Kiểm tra nếu image tồn tại và xóa image với tag cụ thể
-                 def imageName = sh(script: 'echo "${ECR_INFO}" | jq -r \'.name\'', returnStdout: true).trim()
-                 def imageVersion = "v${env.CURRENT_VERSION.toInteger() - 1}"
-                 def fullImageName = "${imageName}:${imageVersion}"
-
-                 def isImageExist = sh(script: "docker images -q ${fullImageName}", returnStdout: true).trim()
-                 if (isImageExist) {
-                     echo "Image with tag ${fullImageName} exists. Removing image..."
-                     sh "docker rmi ${fullImageName}"
-                 }
-
-                 def imageTag = sh(script: 'echo "${ECR_INFO}" | jq -r \'.ecr_uri\'', returnStdout: true).trim()
-                 def fullImageTag = "${imageTag}/${imageName}:${imageVersion}"
-                 def isImageTagExist = sh(script: "docker images -q ${fullImageTag}", returnStdout: true).trim()
-                  if (isImageTagExist) {
-                      echo "Image with tag ${isImageTagExist} exists. Removing image..."
-                      sh "docker rmi ${isImageTagExist}"
-                  }
             }
         }
     }
