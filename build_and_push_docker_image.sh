@@ -36,22 +36,22 @@ rm ecr.json
 
 for ecr in "${list_ecr[@]}"; do
     ecr_uri=$(echo "$ecr" | jq -r '.ecr_uri')
-    name=$(echo "$ecr" | jq -r '.name')
+    repository=$(echo "$ecr" | jq -r '.repository')
     region=$(echo "$ecr" | jq -r '.region')
 
     #Build
-    docker build -t ${name}:${NEW_VERSION_TAG} .
+    docker build -t ${repository}:${NEW_VERSION_TAG} .
 
     #Set tag
-    docker tag ${name}:${NEW_VERSION_TAG} ${ecr_uri}/${name}:${NEW_VERSION_TAG}
+    docker tag ${repository}:${NEW_VERSION_TAG} ${ecr_uri}/${repository}:${NEW_VERSION_TAG}
 
     #Log in to Amazon ECR
     aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${ecr_uri}
 
     #Push Docker image to Amazon ECR
-    docker push ${ecr_uri}/${name}:${NEW_VERSION_TAG}
+    docker push ${ecr_uri}/${repository}:${NEW_VERSION_TAG}
 
     #Remove image
-    docker rmi ${name}:${NEW_VERSION_TAG}
-    docker rmi ${ecr_uri}/${name}:${NEW_VERSION_TAG}
+    docker rmi ${repository}:${NEW_VERSION_TAG}
+    docker rmi ${ecr_uri}/${repository}:${NEW_VERSION_TAG}
 done
