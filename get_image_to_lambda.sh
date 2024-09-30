@@ -2,14 +2,14 @@
 set -e
 
 LIST_LAMBDAS="$1"
-ECR="$2"
+LIST_ECR="$2"
 NEW_VERSION_TAG="$3"
-ECR_URI=$(echo "$ECR" | jq -r '.ecr_uri')
-IMAGE_NAME=$(echo "$ECR" | jq -r '.name')
 
 echo $LIST_LAMBDAS > lambdas.json
 mapfile -t lambdas < <(jq -c '.[]' lambdas.json)
 rm lambdas.json
+
+echo $LIST_ECR > ecr.json
 
 successfulUpdates=()
 
@@ -17,10 +17,16 @@ for lambda in "${lambdas[@]}"; do
     name=$(echo "$lambda" | jq -r '.name')
     region=$(echo "$lambda" | jq -r '.region')
 
-    NEW_ECR_URI=$(echo $ECR_URI | sed "s/ap-southeast-1/$region/")
+    matching_ecr=$(jq -c --arg region "$region" '.[] | select(.region == $region)' ecr.json)
+
+    if [[ -n "$matching_ecr" ]]; then
+        ecr_uri=$(echo "$matching_ecr" | jq -r '.ecr_uri')
+        repository=$(echo "$matching_ecr" | jq -r '.repository')
+    fi
+
     aws lambda update-function-code \
        --function-name $name \
-       --image-uri ${NEW_ECR_URI}/${IMAGE_NAME}:${NEW_VERSION_TAG} --region $region || exit 1
+       --image-uri ${ecr_uri}/${repository}:${NEW_VERSION_TAG} --region $region || exit 1
 
     successfulUpdates+=("$lambda")
     successfulUpdatesJson=$(printf '%s\n' "${successfulUpdates[@]}" | jq -s '.')

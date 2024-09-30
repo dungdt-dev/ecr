@@ -43,29 +43,29 @@ pipeline {
             }
         }
 
-        // stage('Get Image to Lambda') {
-        //     when {
-        //         expression {
-        //             return currentBuild.result != 'FAILURE'
-        //         }
-        //     }
-        //     steps {
-        //         script {
-        //             try {
-        //              sh 'chmod +x ./get_image_to_lambda.sh'
-        //              withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-        //                 sh """
-        //                        ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
-        //                    """
-        //              }
-        //             } catch (Exception e) {
-        //                 currentBuild.result = 'FAILURE'
-        //                 env.ERROR_STAGE = 'get_image_to_lambda'
-        //                 env.EXCEPTION_MESSAGE = e.message
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Get Image to Lambda') {
+            when {
+                expression {
+                    return currentBuild.result != 'FAILURE'
+                }
+            }
+            steps {
+                script {
+                    try {
+                     sh 'chmod +x ./get_image_to_lambda.sh'
+                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+                        sh """
+                               ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
+                           """
+                     }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        env.ERROR_STAGE = 'get_image_to_lambda'
+                        env.EXCEPTION_MESSAGE = e.message
+                    }
+                }
+            }
+        }
 
         // stage('Build Frontend') {
         //     when {
