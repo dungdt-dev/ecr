@@ -1,11 +1,7 @@
 #!/bin/bash
-ECR="$1"
-IMAGE_NAME=$(echo "$ECR" | jq -r '.name')
-REGION=$(echo "$ECR" | jq -r '.region')
+NEW_VERSION_TAG="$1"
 
-NEW_VERSION_TAG="$2"
-
-GIT="$3"
+GIT="$2"
 USER_NAME=$(echo "$GIT" | jq -r '.name')
 USER_EMAIL=$(echo "$GIT" | jq -r '.email')
 REMOTE_ORIGIN=$(echo "$GIT" | jq -r '.remote_origin')
@@ -16,11 +12,11 @@ git restore .
 git checkout .
 
 #build
-docker build -t ${IMAGE_NAME}:${NEW_VERSION_TAG} .
+docker build -t front-end:${NEW_VERSION_TAG} .
 
-docker run -it -d --name ${IMAGE_NAME} ${IMAGE_NAME}:${NEW_VERSION_TAG} sh
+docker run -it -d --name front-end front-end:${NEW_VERSION_TAG} sh
 
-exec_result=$(docker exec ${IMAGE_NAME} sh -c "
+exec_result=$(docker exec front-end sh -c "
                         git config --global init.defaultBranch master &&
                         mkdir deploy &&
                         cd deploy &&
@@ -43,8 +39,8 @@ exec_result=$(docker exec ${IMAGE_NAME} sh -c "
                         fi
             ") || exec_result=1
 
-docker rm -f ${IMAGE_NAME}
-docker rmi ${IMAGE_NAME}:${NEW_VERSION_TAG}
+docker rm -f front-end
+docker rmi front-end:${NEW_VERSION_TAG}
 
 
 # error

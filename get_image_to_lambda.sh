@@ -33,3 +33,5 @@ for lambda in "${lambdas[@]}"; do
 
     echo "$successfulUpdatesJson" > success_lambdas.json
 done
+
+rm ecr.json
