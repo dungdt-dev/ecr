@@ -149,11 +149,10 @@ def pushChatworkMessage(String message) {
 
 
 def getEnvForBranch() {
-    def branch = env.BRANCH_NAME ? env.BRANCH_NAME : sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
-    echo branch
-
-    branch = scm.branches[0].name
-    echo branch
+    def branch = scm.branches[0].name
+    if (branch.contains("*/")) {
+        branch = branch_nem.split("\\*/")[1]
+        }
 
     env.LIST_ECR = env."${branch}_LIST_ECR"
 
