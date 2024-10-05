@@ -133,8 +133,8 @@ def pushChatworkMessage(String message) {
 
 
 def setup() {
-    if (fileExists(env.versionFile)) {
-        def versionText = readFile(env.versionFile).trim()
+    if (fileExists(env.VERSION_FILE)) {
+        def versionText = readFile(env.VERSION_FILE).trim()
         def version = versionText.isInteger() ? versionText.toInteger() : 0
         env.CURRENT_VERSION = version
     } else {
