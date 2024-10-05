@@ -152,7 +152,7 @@ def getEnvForBranch() {
     def branch = env.BRANCH_NAME ? env.BRANCH_NAME : sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
     echo branch
 
-    branch = scm.branches.first().getExpandedName(env.getEnvironment())
+    branch = scm.branches.first()
     echo branch
 
     branch = scm.branches[0].name
