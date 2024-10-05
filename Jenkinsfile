@@ -150,9 +150,7 @@ def pushChatworkMessage(String message) {
 
 def getEnvForBranch() {
     def branch = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim().toUpperCase()
-
-    def listEcrKey = "${branch}_LIST_ECR"
-    env.LIST_ECR = env.getAt(listEcrKey)
+    env.LIST_ECR = env."${branch}_LIST_ECR"
 
     echo env.LIST_ECR
 }
