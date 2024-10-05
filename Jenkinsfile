@@ -151,7 +151,7 @@ def pushChatworkMessage(String message) {
 def getEnvForBranch() {
     def branch = scm.branches[0].name
     if (branch.contains("*/")) {
-        branch = branch_nem.split("\\*/")[1]
+        branch = branch.split("\\*/")[1]
         }
 
     env.LIST_ECR = env."${branch}_LIST_ECR"
