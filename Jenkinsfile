@@ -8,35 +8,22 @@ pipeline {
     }
 
     stages {
-        // stage('Get Current Version') {
-        //     steps {
-        //         script {
-        //             getVersionTags(VERSION_FILE)
-        //         }
-        //         echo "Current version: ${env.CURRENT_VERSION}"
-        //         echo "New version tag: ${env.NEW_VERSION_TAG}"
-        //         echo "Old version tag: ${env.OLD_VERSION_TAG}"
-        //     }
-        // }
-
         stage('Build And Push Docker Image') {
-            when {
-                expression {
-                    return currentBuild.result != 'FAILURE'
-                }
-            }
             steps {
                 script {
                     try {
-                     pushChatworkMessage('Start Build And Push Docker Image')
-                     getVersionTags(VERSION_FILE)
+                    //  pushChatworkMessage('Start Build And Push Docker Image')
+                    //  getVersionTags(VERSION_FILE)
 
-                     sh 'chmod +x ./build_and_push_docker_image.sh'
-                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_ECR_CREDENTIALS}"]]) {
-                        sh """
-                               ./build_and_push_docker_image.sh '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
-                           """
-                     }
+                    //  sh 'chmod +x ./build_and_push_docker_image.sh'
+                    //  withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_ECR_CREDENTIALS}"]]) {
+                    //     sh """
+                    //            ./build_and_push_docker_image.sh '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
+                    //        """
+                    //  }
+
+                   getEnvForBranch()
+                    
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         env.ERROR_STAGE = 'build_and_push_docker_image'
@@ -46,94 +33,95 @@ pipeline {
             }
         }
 
-        stage('Get Image to Lambda') {
-            when {
-                expression {
-                    return currentBuild.result != 'FAILURE'
-                }
-            }
-            steps {
-                script {
-                    try {
-                     pushChatworkMessage('Start Get Image to Lambda')
-                     getVersionTags(VERSION_FILE)
+        // stage('Get Image to Lambda') {
+        //     when {
+        //         expression {
+        //             return currentBuild.result != 'FAILURE'
+        //         }
+        //     }
+        //     steps {
+        //         script {
+        //             try {
+        //              pushChatworkMessage('Start Get Image to Lambda')
+        //              getVersionTags(VERSION_FILE)
 
-                     sh 'chmod +x ./get_image_to_lambda.sh'
-                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-                        sh """
-                               ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
-                           """
-                     }
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        env.ERROR_STAGE = 'get_image_to_lambda'
-                        env.EXCEPTION_MESSAGE = e.message
-                    }
-                }
-            }
-        }
+        //              sh 'chmod +x ./get_image_to_lambda.sh'
+        //              withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+        //                 sh """
+        //                        ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
+        //                    """
+        //              }
+        //             } catch (Exception e) {
+        //                 currentBuild.result = 'FAILURE'
+        //                 env.ERROR_STAGE = 'get_image_to_lambda'
+        //                 env.EXCEPTION_MESSAGE = e.message
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Build Frontend') {
-            when {
-                expression {
-                    return currentBuild.result != 'FAILURE'
-                }
-            }
-            steps {
-                script {
-                    try {
-                     pushChatworkMessage('Start Build Frontend')
-                     getVersionTags(VERSION_FILE)
+        // stage('Build Frontend') {
+        //     when {
+        //         expression {
+        //             return currentBuild.result != 'FAILURE'
+        //         }
+        //     }
+        //     steps {
+        //         script {
+        //             try {
+        //              pushChatworkMessage('Start Build Frontend')
+        //              getVersionTags(VERSION_FILE)
 
-                     sh 'chmod +x ./build_frontend.sh'
-                        sh """
-                               ./build_frontend.sh '${env.NEW_VERSION_TAG}' '${env.GIT_INFO}'
-                           """
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        env.ERROR_STAGE = 'build_frontend'
-                        env.EXCEPTION_MESSAGE = e.message
-                    }
-                }
-            }
-        }
+        //              sh 'chmod +x ./build_frontend.sh'
+        //                 sh """
+        //                        ./build_frontend.sh '${env.NEW_VERSION_TAG}' '${env.GIT_INFO}'
+        //                    """
+        //             } catch (Exception e) {
+        //                 currentBuild.result = 'FAILURE'
+        //                 env.ERROR_STAGE = 'build_frontend'
+        //                 env.EXCEPTION_MESSAGE = e.message
+        //             }
+        //         }
+        //     }
+        // }
 
     }
 
-    post {
-        always {
-            script {
-                def successLambdasFile = 'success_lambdas.json'
-                if (currentBuild.result == 'FAILURE') {
-                    pushChatworkMessage('Error in stage ' + env.ERROR_STAGE + ': ' + env.EXCEPTION_MESSAGE)
+    // post {
+    //     always {
+    //         script {
+    //             def successLambdasFile = 'success_lambdas.json'
+    //             if (currentBuild.result == 'FAILURE') {
+    //                 pushChatworkMessage('Error in stage ' + env.ERROR_STAGE + ': ' + env.EXCEPTION_MESSAGE)
 
-                    switch (env.ERROR_STAGE) {
-                        case 'get_image_to_lambda':
-                            sh 'chmod +x ./rollback_image_to_lambda.sh'
-                            try {
-                                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-                                    sh """
-                                           ./rollback_image_to_lambda.sh '${env.LIST_ECR}' '${env.OLD_VERSION_TAG}'
-                                       """
-                                 }
-                             } catch (Exception e) {
-                                 def jsonContent = readFile(successLambdasFile)
-                                 pushChatworkMessage("[toall]\n Rollback error: ${jsonContent}")
-                             }
-                            break
-                    }
-                } else {
-                    script {
-                        writeFile file: VERSION_FILE, text: "${env.CURRENT_VERSION.toInteger() + 1}"
-                    }
-                }
+    //                 switch (env.ERROR_STAGE) {
+    //                     case 'get_image_to_lambda':
+    //                         sh 'chmod +x ./rollback_image_to_lambda.sh'
+    //                         try {
+    //                              withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+    //                                 sh """
+    //                                        ./rollback_image_to_lambda.sh '${env.LIST_ECR}' '${env.OLD_VERSION_TAG}'
+    //                                    """
+    //                              }
+    //                          } catch (Exception e) {
+    //                              def jsonContent = readFile(successLambdasFile)
+    //                              pushChatworkMessage("[toall]\n Rollback error: ${jsonContent}")
+    //                          }
+    //                         break
+    //                 }
+    //             } else {
+    //                 script {
+    //                     pushChatworkMessage('Deploy success')
+    //                     writeFile file: VERSION_FILE, text: "${env.CURRENT_VERSION.toInteger() + 1}"
+    //                 }
+    //             }
 
-                if (fileExists(successLambdasFile)) {
-                    sh "rm ${successLambdasFile}"
-                }
-            }
-        }
-    }
+    //             if (fileExists(successLambdasFile)) {
+    //                 sh "rm ${successLambdasFile}"
+    //             }
+    //         }
+    //     }
+    // }
 
 }
 
@@ -157,4 +145,14 @@ def pushChatworkMessage(String message) {
     sh """
             ./push_chatwork_message.sh '${env.CHATWORK_CREDENTIAL}' '${body}'
         """
+}
+
+
+def getEnvForBranch() {
+    def branch = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim().toUpperCase()
+
+    def listEcrKey = "${branch}_LIST_ECR"
+    env.LIST_ECR = env.getAt(listEcrKey)
+
+    echo env.LIST_ECR
 }
