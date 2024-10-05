@@ -153,4 +153,7 @@ def setup() {
 
     env.LIST_ECR = env."${branch}_LIST_ECR"
     env.LIST_LAMBDAS = env."${branch}_LIST_LAMBDAS"
+
+    echo env.LIST_ECR
+    echo env.LIST_LAMBDAS
 }
