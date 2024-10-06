@@ -5,6 +5,7 @@ LAMBDA_TEST="$1"
 name=$(echo "$LAMBDA_TEST" | jq -r '.name')
 region=$(echo "$LAMBDA_TEST" | jq -r '.region')
 url=$(echo "$LAMBDA_TEST" | jq -r '.url')
+text=$(echo "$LAMBDA_TEST" | jq -r '.text')
 
 LIST_ECR="$2"
 NEW_VERSION_TAG="$3"
@@ -26,10 +27,10 @@ sleep 30
 
 curl -s "$url" > response.txt
 
-if grep -q "lambda_test" response.txt; then
-  echo "Text 'lambda_test' found in response"
+if grep -q "$text" response.txt; then
+  echo "Text '$text' found in response"
   exit 0
 else
-  echo "Text 'lambda_test' not found in response"
+  echo "Text '$text' not found in response"
   exit 1
 fi
