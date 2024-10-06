@@ -23,7 +23,7 @@ aws lambda update-function-code \
 --function-name $name \
 --image-uri ${ecr_uri}/${repository}:${NEW_VERSION_TAG} --region $region || exit 1
 
-sleep 30
+sleep 10
 
 curl -s "$url" > response.txt
 
