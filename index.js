@@ -31,7 +31,7 @@ exports.handler = async (event) => {
         statusCode: 200,
         body: {
             rows: rows,
-            content: 'test pull image dynamic test region 6/10 lambda_test'
+            content: 'test pull image dynamic test region 6/10 lambda_test hoang'
         },
     };
 };
