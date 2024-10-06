@@ -27,9 +27,9 @@ sleep 30
 curl -s "$url" > response.txt
 
 if grep -q "lambda_test" response.txt; then
-  echo "Text 'USA' found in response"
+  echo "Text 'lambda_test' found in response"
   exit 0
 else
-  echo "Text 'USA' not found in response"
+  echo "Text 'lambda_test' not found in response"
   exit 1
 fi
