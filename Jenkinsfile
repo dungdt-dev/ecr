@@ -30,6 +30,33 @@ pipeline {
             }
         }
 
+        stage('Get Image to Lambda test') {
+            when {
+                expression {
+                    return currentBuild.result != 'FAILURE'
+                }
+            }
+            steps {
+                script {
+                    try {
+                     pushChatworkMessage('Start Get Image to Lambda test')
+                     setup()
+
+                     sh 'chmod +x ./get_image_to_lambda_test.sh'
+                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+                        sh """
+                               ./get_image_to_lambda_test.sh '${env.LAMBDA_TEST}' '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
+                           """
+                     }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        env.ERROR_STAGE = 'get_image_to_lambda_test'
+                        env.EXCEPTION_MESSAGE = e.message
+                    }
+                }
+            }
+        }
+
         stage('Get Image to Lambda') {
             when {
                 expression {
