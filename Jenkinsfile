@@ -136,7 +136,7 @@ pipeline {
                 } else {
                     script {
                         pushChatworkMessage('Deploy success')
-                        writeFile file: env.VERSION_FILE, text: "${env.CURRENT_VERSION.toInteger() + 1}"
+                        writeFile file: env.VERSION_FILE, text: "${env.NEW_VERSION_TAG.toInteger()}"
                     }
                 }
 
@@ -160,17 +160,31 @@ def pushChatworkMessage(String message) {
 
 
 def setup() {
+     if(env.setup) {
+        return;
+     }
+
+    env.OLD_VERSION_TAG = 1
     if (fileExists(env.VERSION_FILE)) {
         def versionText = readFile(env.VERSION_FILE).trim()
-        def version = versionText.isInteger() ? versionText.toInteger() : 0
-        env.CURRENT_VERSION = version
-    } else {
-        env.CURRENT_VERSION = 0
+        def version = versionText.isInteger() ? versionText.toInteger() : 1
+        env.OLD_VERSION_TAG = version
     }
 
-    env.NEW_VERSION_TAG = "v${env.CURRENT_VERSION.toInteger() + 1}"
-    env.OLD_VERSION_TAG = "v${env.CURRENT_VERSION.toInteger()}"
+    def response = httpRequest(
+        url: "http://localhost:8080/job/${env.JOB_NAME}/${currentBuild.number}/api/json",
+        authentication: 'dungdt'
+    )
 
+    def json = readJSON text: response.content
+    def causes = json.actions.find { it._class == "hudson.model.CauseAction" }?.causes
+    def restartedCause = causes.find { it.shortDescription?.contains("Restarted from build") }
+
+    env.NEW_VERSION_TAG = ${currentBuild.number}
+    if (restartedCause) {
+        def restartedBuildId = restartedCause.shortDescription.replaceAll(/.*Restarted from build #(\d+).*/, '$1')
+        env.NEW_VERSION_TAG = ${restartedBuildId}
+    }
 
     def branch = scm.branches[0].name
     if (branch.contains("*/")) {
@@ -180,4 +194,6 @@ def setup() {
 
     env.LIST_ECR = env."${branch}_LIST_ECR"
     env.LIST_LAMBDAS = env."${branch}_LIST_LAMBDAS"
+
+    env.setup = true
 }
