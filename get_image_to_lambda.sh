@@ -26,7 +26,7 @@ for lambda in "${lambdas[@]}"; do
 
     aws lambda update-function-code \
        --function-name $name \
-       --image-uri ${ecr_uri}/${repository}:${NEW_VERSION_TAG} --region $region || exit 1
+       --image-uri ${ecr_uri}/${repository}:${NEW_VERSION_TAG} --region $region > /dev/null 2>&1 || exit 1
 
     successfulUpdates+=("$lambda")
     successfulUpdatesJson=$(printf '%s\n' "${successfulUpdates[@]}" | jq -s '.')
