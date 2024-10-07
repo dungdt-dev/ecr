@@ -160,6 +160,15 @@ def pushChatworkMessage(String message) {
 
 
 def setup() {
+    def branch = scm.branches[0].name
+    if (branch.contains("*/")) {
+        branch = branch.split("\\*/")[1]
+    }
+    branch = branch.toUpperCase()
+
+    env.LIST_ECR = env."${branch}_LIST_ECR"
+    env.LIST_LAMBDAS = env."${branch}_LIST_LAMBDAS"
+
      if(env.setup) {
         return;
      }
@@ -175,8 +184,6 @@ def setup() {
         url: "http://localhost:8080/job/${env.JOB_NAME}/${currentBuild.number}/api/json",
         authentication: 'dungdt'
     )
-
-
     def json = readJSON text: response.content
     def causes = json.actions.find { it._class == "hudson.model.CauseAction" }?.causes
     def restartedCause = causes.find { it.shortDescription?.contains("Restarted from build") }
@@ -186,15 +193,6 @@ def setup() {
         def restartedBuildId = restartedCause.shortDescription.replaceAll(/.*Restarted from build #(\d+).*/, '$1')
         env.NEW_VERSION_TAG = restartedBuildId.toInteger()
     }
-
-    def branch = scm.branches[0].name
-    if (branch.contains("*/")) {
-        branch = branch.split("\\*/")[1]
-    }
-    branch = branch.toUpperCase()
-
-    env.LIST_ECR = env."${branch}_LIST_ECR"
-    env.LIST_LAMBDAS = env."${branch}_LIST_LAMBDAS"
 
     env.setup = true
 }

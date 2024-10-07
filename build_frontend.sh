@@ -1,7 +1,7 @@
 #!/bin/bash
 NEW_VERSION_TAG="$1"
-
 GIT="$2"
+
 USER_NAME=$(echo "$GIT" | jq -r '.name')
 USER_EMAIL=$(echo "$GIT" | jq -r '.email')
 REMOTE_ORIGIN=$(echo "$GIT" | jq -r '.remote_origin')
@@ -11,7 +11,7 @@ BRANCH=$(echo "$GIT" | jq -r '.branch')
 git restore .
 git checkout .
 
-#build
+# build
 docker build -t front-end:${NEW_VERSION_TAG} .
 
 docker run -it -d --name front-end front-end:${NEW_VERSION_TAG} sh
@@ -26,24 +26,33 @@ exec_result=$(docker exec front-end sh -c "
                         git remote add origin ${REMOTE_ORIGIN} &&
                         git remote -v &&
                         git fetch &&
-                        git checkout ${BRANCH} &&
-                        cd /var/task &&
-                        cp -r build/* deploy/ &&
-                        cd deploy &&
-                        if [ -n \"\$(git status --porcelain)\" ]; then
-                          git add . &&
-                          git commit -m '${NEW_VERSION_TAG}' &&
-                          git push
+                        # Check if branch with NEW_VERSION_TAG exists
+                        if git show-ref --quiet refs/heads/${NEW_VERSION_TAG}; then
+                          echo 'Branch ${NEW_VERSION_TAG} exists. Checking out.' &&
+                          git checkout ${NEW_VERSION_TAG} &&
+                          git push -f origin ${NEW_VERSION_TAG}
                         else
-                          echo 'No changes to commit'
+                          echo 'Branch ${NEW_VERSION_TAG} does not exist. Creating new branch.' &&
+                          git checkout -b ${NEW_VERSION_TAG} &&
+                          git push origin ${NEW_VERSION_TAG} &&
+                          cd /var/task &&
+                          cp -r build/* deploy/ &&
+                          cd deploy &&
+                          if [ -n \"\$(git status --porcelain)\" ]; then
+                            git add . &&
+                            git commit -m '${NEW_VERSION_TAG}' &&
+                            git push origin ${NEW_VERSION_TAG} &&
+                            git push origin ${BRANCH}
+                          else
+                            echo 'No changes to commit'
+                          fi
                         fi
             ") || exec_result=1
 
 docker rm -f front-end
 docker rmi front-end:${NEW_VERSION_TAG}
 
-
-# error
+# error handling
 if [ $exec_result -ne 0 ]; then
     echo "An error occurred during the exec command."
     exit 1
