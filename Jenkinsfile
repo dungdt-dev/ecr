@@ -176,14 +176,15 @@ def setup() {
         authentication: 'dungdt'
     )
 
+
     def json = readJSON text: response.content
     def causes = json.actions.find { it._class == "hudson.model.CauseAction" }?.causes
     def restartedCause = causes.find { it.shortDescription?.contains("Restarted from build") }
 
-    env.NEW_VERSION_TAG = ${currentBuild.number}
+    env.NEW_VERSION_TAG = currentBuild.number.toInteger()
     if (restartedCause) {
         def restartedBuildId = restartedCause.shortDescription.replaceAll(/.*Restarted from build #(\d+).*/, '$1')
-        env.NEW_VERSION_TAG = ${restartedBuildId}
+        env.NEW_VERSION_TAG = restartedBuildId.toInteger()
     }
 
     def branch = scm.branches[0].name
