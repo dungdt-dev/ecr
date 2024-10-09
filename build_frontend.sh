@@ -40,8 +40,8 @@ exec_result=$(docker exec front-end sh -c "
                           cd deploy &&
                           if [ -n \"\$(git status --porcelain)\" ]; then
                             git add . &&
-                            git commit -m '${NEW_VERSION_TAG}' &&
-                          fi
+                            git commit -m '${NEW_VERSION_TAG}'
+                          fi &&
                           git push origin ${NEW_VERSION_TAG} &&
                           git push origin ${BRANCH}
                         fi
