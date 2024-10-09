@@ -26,6 +26,7 @@ exec_result=$(docker exec front-end sh -c "
                         git remote add origin ${REMOTE_ORIGIN} &&
                         git remote -v &&
                         git fetch &&
+                        git checkout ${BRANCH} &&
                         # Check if branch with NEW_VERSION_TAG exists
                         if git show-ref --quiet refs/heads/${NEW_VERSION_TAG}; then
                           echo 'Branch ${NEW_VERSION_TAG} exists. Checking out.' &&
@@ -43,10 +44,10 @@ exec_result=$(docker exec front-end sh -c "
                           cd deploy &&
                           if [ -n \"\$(git status --porcelain)\" ]; then
                             git add . &&
-                            git commit -m '${NEW_VERSION_TAG}'
-                          fi &&
-                          git push origin ${NEW_VERSION_TAG} &&
-                          git push origin ${BRANCH}
+                            git commit -m '${NEW_VERSION_TAG}' &&
+                            git push origin ${NEW_VERSION_TAG} &&
+                            git push -f origin ${BRANCH}
+                          fi
                         fi
             ") || exec_result=1
 
