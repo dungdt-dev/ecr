@@ -29,15 +29,13 @@ exec_result=$(docker exec front-end sh -c "
                         git checkout ${BRANCH} &&
                         # Check if branch with NEW_VERSION_TAG exists
                         if git show-ref --quiet refs/heads/${NEW_VERSION_TAG}; then
-                          echo 'Branch ${NEW_VERSION_TAG} exists. Checking out.' &&
                           git checkout ${NEW_VERSION_TAG} &&
 
                           # Pull changes from remote before pushing
                           git pull --rebase origin ${NEW_VERSION_TAG} &&
                           git push -f origin ${BRANCH}
                         else
-                          echo 'Branch ${NEW_VERSION_TAG} does not exist. Creating new branch.' &&
-                          git checkout -b ${NEW_VERSION_TAG} &&
+
                           # Check if there are changes to commit before pushing
                           cd /var/task &&
                           cp -r build/* deploy/ &&
@@ -45,8 +43,9 @@ exec_result=$(docker exec front-end sh -c "
                           if [ -n \"\$(git status --porcelain)\" ]; then
                             git add . &&
                             git commit -m '${NEW_VERSION_TAG}' &&
-                            git push origin ${NEW_VERSION_TAG} &&
-                            git push -f origin ${BRANCH}
+                            git push &&
+                            git checkout -b ${NEW_VERSION_TAG} &&
+                            git push origin ${NEW_VERSION_TAG}
                           fi
                         fi
             ") || exec_result=1
