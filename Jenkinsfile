@@ -7,82 +7,82 @@ pipeline {
     }
 
     stages {
-        // stage('Build And Push Docker Image') {
-        //     steps {
-        //         script {
-        //             try {
-        //              pushChatworkMessage('Start Build And Push Docker Image')
-        //              setup()
+        stage('Build And Push Docker Image') {
+            steps {
+                script {
+                    try {
+                     pushChatworkMessage('Start Build And Push Docker Image')
+                     setup()
 
-        //              sh 'chmod +x ./build_and_push_docker_image.sh'
-        //              withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_ECR_CREDENTIALS}"]]) {
-        //                 sh """
-        //                        ./build_and_push_docker_image.sh '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
-        //                    """
-        //              }
+                     sh 'chmod +x ./build_and_push_docker_image.sh'
+                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_ECR_CREDENTIALS}"]]) {
+                        sh """
+                               ./build_and_push_docker_image.sh '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
+                           """
+                     }
                     
-        //             } catch (Exception e) {
-        //                 currentBuild.result = 'FAILURE'
-        //                 env.ERROR_STAGE = 'build_and_push_docker_image'
-        //                 env.EXCEPTION_MESSAGE = e.message
-        //             }
-        //         }
-        //     }
-        // }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        env.ERROR_STAGE = 'build_and_push_docker_image'
+                        env.EXCEPTION_MESSAGE = e.message
+                    }
+                }
+            }
+        }
 
-        // stage('Get Image to Lambda test') {
-        //     when {
-        //         expression {
-        //             return currentBuild.result != 'FAILURE'
-        //         }
-        //     }
-        //     steps {
-        //         script {
-        //             try {
-        //              pushChatworkMessage('Start Get Image to Lambda test')
-        //              setup()
+        stage('Get Image to Lambda test') {
+            when {
+                expression {
+                    return currentBuild.result != 'FAILURE'
+                }
+            }
+            steps {
+                script {
+                    try {
+                     pushChatworkMessage('Start Get Image to Lambda test')
+                     setup()
 
-        //              sh 'chmod +x ./get_image_to_lambda_test.sh'
-        //              withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-        //                 sh """
-        //                        ./get_image_to_lambda_test.sh '${env.LAMBDA_TEST}' '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
-        //                    """
-        //              }
-        //             } catch (Exception e) {
-        //                 currentBuild.result = 'FAILURE'
-        //                 env.ERROR_STAGE = 'get_image_to_lambda_test'
-        //                 env.EXCEPTION_MESSAGE = e.message
-        //             }
-        //         }
-        //     }
-        // }
+                     sh 'chmod +x ./get_image_to_lambda_test.sh'
+                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+                        sh """
+                               ./get_image_to_lambda_test.sh '${env.LAMBDA_TEST}' '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
+                           """
+                     }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        env.ERROR_STAGE = 'get_image_to_lambda_test'
+                        env.EXCEPTION_MESSAGE = e.message
+                    }
+                }
+            }
+        }
 
-        // stage('Get Image to Lambda') {
-        //     when {
-        //         expression {
-        //             return currentBuild.result != 'FAILURE'
-        //         }
-        //     }
-        //     steps {
-        //         script {
-        //             try {
-        //              pushChatworkMessage('Start Get Image to Lambda')
-        //              setup()
+        stage('Get Image to Lambda') {
+            when {
+                expression {
+                    return currentBuild.result != 'FAILURE'
+                }
+            }
+            steps {
+                script {
+                    try {
+                     pushChatworkMessage('Start Get Image to Lambda')
+                     setup()
 
-        //              sh 'chmod +x ./get_image_to_lambda.sh'
-        //              withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-        //                 sh """
-        //                        ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
-        //                    """
-        //              }
-        //             } catch (Exception e) {
-        //                 currentBuild.result = 'FAILURE'
-        //                 env.ERROR_STAGE = 'get_image_to_lambda'
-        //                 env.EXCEPTION_MESSAGE = e.message
-        //             }
-        //         }
-        //     }
-        // }
+                     sh 'chmod +x ./get_image_to_lambda.sh'
+                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
+                        sh """
+                               ./get_image_to_lambda.sh '${env.LIST_LAMBDAS}' '${env.LIST_ECR}' '${env.NEW_VERSION_TAG}'
+                           """
+                     }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        env.ERROR_STAGE = 'get_image_to_lambda'
+                        env.EXCEPTION_MESSAGE = e.message
+                    }
+                }
+            }
+        }
 
         stage('Build Frontend') {
             when {
