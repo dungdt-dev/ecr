@@ -34,18 +34,16 @@ exec_result=$(docker exec front-end sh -c "
                         else
                           echo 'Branch ${NEW_VERSION_TAG} does not exist. Creating new branch.' &&
                           git checkout -b ${NEW_VERSION_TAG} &&
-                          git push origin ${NEW_VERSION_TAG} &&
+                          # Check if there are changes to commit before pushing
                           cd /var/task &&
                           cp -r build/* deploy/ &&
                           cd deploy &&
                           if [ -n \"\$(git status --porcelain)\" ]; then
                             git add . &&
                             git commit -m '${NEW_VERSION_TAG}' &&
-                            git push origin ${NEW_VERSION_TAG} &&
-                            git push origin ${BRANCH}
-                          else
-                            echo 'No changes to commit'
                           fi
+                          git push origin ${NEW_VERSION_TAG} &&
+                          git push origin ${BRANCH}
                         fi
             ") || exec_result=1
 
