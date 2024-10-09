@@ -26,16 +26,13 @@ exec_result=$(docker exec front-end sh -c "
                         git remote add origin ${REMOTE_ORIGIN} &&
                         git remote -v &&
                         git fetch &&
-                        git checkout ${BRANCH} &&
                         # Check if branch with NEW_VERSION_TAG exists
                         if git show-ref --quiet refs/heads/${NEW_VERSION_TAG}; then
                           git checkout ${NEW_VERSION_TAG} &&
-
-                          # Pull changes from remote before pushing
-                          git pull --rebase origin ${NEW_VERSION_TAG} &&
-                          git push -f origin ${BRANCH}
+                          git pull ${NEW_VERSION_TAG} &&
+                          git push -f origin ${NEW_VERSION_TAG}:${BRANCH}
                         else
-
+                          git checkout ${BRANCH} &&
                           # Check if there are changes to commit before pushing
                           cd /var/task &&
                           cp -r build/* deploy/ &&
