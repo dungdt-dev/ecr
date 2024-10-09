@@ -30,7 +30,10 @@ exec_result=$(docker exec front-end sh -c "
                         if git show-ref --quiet refs/heads/${NEW_VERSION_TAG}; then
                           echo 'Branch ${NEW_VERSION_TAG} exists. Checking out.' &&
                           git checkout ${NEW_VERSION_TAG} &&
-                          git push -f origin ${NEW_VERSION_TAG}
+
+                          # Pull changes from remote before pushing
+                          git pull --rebase origin ${NEW_VERSION_TAG} &&
+                          git push -f origin ${BRANCH}
                         else
                           echo 'Branch ${NEW_VERSION_TAG} does not exist. Creating new branch.' &&
                           git checkout -b ${NEW_VERSION_TAG} &&
