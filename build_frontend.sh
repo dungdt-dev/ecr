@@ -43,10 +43,10 @@ exec_result=$(docker exec front-end sh -c "
                           if [ -n \"\$(git status --porcelain)\" ]; then
                             git add . &&
                             git commit -m '${NEW_VERSION_TAG}' &&
-                            git push &&
-                            git checkout -b ${NEW_VERSION_TAG} &&
-                            git push origin ${NEW_VERSION_TAG}
+                            git push
                           fi
+                          git checkout -b ${NEW_VERSION_TAG} &&
+                          git push origin ${NEW_VERSION_TAG}
                         fi
             ") || exec_result=1
 
