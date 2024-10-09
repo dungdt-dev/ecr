@@ -29,7 +29,7 @@ exec_result=$(docker exec front-end sh -c "
                         # Check if branch with NEW_VERSION_TAG exists
                         if git ls-remote --heads ${REMOTE_ORIGIN} ${NEW_VERSION_TAG} | grep 'refs/heads/${NEW_VERSION_TAG}'; then
                           git checkout ${NEW_VERSION_TAG} &&
-                          git pull ${NEW_VERSION_TAG} &&
+                          git pull --rebase origin ${NEW_VERSION_TAG} &&
                           git push -f origin ${NEW_VERSION_TAG}:${BRANCH}
                         else
                           git checkout ${BRANCH} &&
