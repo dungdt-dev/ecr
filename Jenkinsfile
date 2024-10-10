@@ -121,10 +121,12 @@ pipeline {
                     switch (env.ERROR_STAGE) {
                         case 'get_image_to_lambda':
                             sh 'chmod +x ./rollback_image_to_lambda.sh'
+                              sh 'chmod +x ./build_frontend.sh'
                             try {
                                  withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
                                     sh """
                                            ./rollback_image_to_lambda.sh '${env.LIST_ECR}' '${env.OLD_VERSION_TAG}'
+                                           ./build_frontend.sh '${env.OLD_VERSION_TAG}' '${env.GIT_INFO}'
                                        """
                                  }
                              } catch (Exception e) {
@@ -168,17 +170,23 @@ def setup() {
 
     env.LIST_ECR = env."${branch}_LIST_ECR"
     env.LIST_LAMBDAS = env."${branch}_LIST_LAMBDAS"
+    def oldVersionTag = null
+
+    if (fileExists(env.VERSION_FILE)) {
+        def versionText = readFile(env.VERSION_FILE).trim()
+        oldVersionTag = versionText ? versionText.toInteger() : null
+    }
+
+    if (oldVersionTag == null) {
+        oldVersionTag = env."${branch}_OLD_VERSION_TAG"
+        oldVersionTag = oldVersionTag ? oldVersionTag.toInteger() : 1
+    }
+
+    env.OLD_VERSION_TAG = oldVersionTag
 
      if(env.setup) {
         return;
      }
-
-    env.OLD_VERSION_TAG = 1
-    if (fileExists(env.VERSION_FILE)) {
-        def versionText = readFile(env.VERSION_FILE).trim()
-        def version = versionText.isInteger() ? versionText.toInteger() : 1
-        env.OLD_VERSION_TAG = version
-    }
 
     def response = httpRequest(
         url: "http://localhost:8080/job/${env.JOB_NAME}/${currentBuild.number}/api/json",
