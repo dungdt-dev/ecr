@@ -24,7 +24,7 @@ for ecr in "${list_ecr[@]}"; do
     region=$(echo "$ecr" | jq -r '.region')
 
     # Kiểm tra nếu image đã tồn tại
-    if [[ "$(docker images -q ${repository}:${NEW_VERSION_TAG} 2> /dev/null)" == "" ]]; then=
+    if [[ "$(docker images -q ${repository}:${NEW_VERSION_TAG} 2> /dev/null)" == "" ]]; then
         docker build -t ${repository}:${NEW_VERSION_TAG} .
     fi
 
@@ -45,6 +45,6 @@ for ecr in "${list_ecr[@]}"; do
 
     echo "$successfulImagesJson" > $images_file
 
-    #Remove image tag
+    # Remove image tag
     docker rmi ${ecr_uri}/${repository}:${NEW_VERSION_TAG}
 done
