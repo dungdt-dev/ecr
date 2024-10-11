@@ -76,7 +76,7 @@ pipeline {
                         def ecrJson = new groovy.json.JsonBuilder(listEcr["${user}"]).toString()
                         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${user}"]]) {
                              sh """
-                                    ./get_image_to_lambda.sh '${lambdasJson}' '${ecrJson}' '${env.NEW_VERSION_TAG}'
+                                    ./get_image_to_lambda.sh '${lambdasJson}' '${ecrJson}' '${env.NEW_VERSION_TAG}' '${user}'
                                 """
                         }
                       }
@@ -129,12 +129,21 @@ pipeline {
                             sh 'chmod +x ./rollback_image_to_lambda.sh'
                               sh 'chmod +x ./build_frontend.sh'
                             try {
-                                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_LAMBDA_CREDENTIALS}"]]) {
-                                    sh """
-                                           ./rollback_image_to_lambda.sh '${env.LIST_ECR}' '${env.OLD_VERSION_TAG}'
-                                           ./build_frontend.sh '${env.OLD_VERSION_TAG}' '${env.GIT_INFO}'
-                                       """
-                                 }
+                                 def listLambdas = readJSON file: successLambdasFile
+                                 def listEcr = readJSON text: env.LIST_ECR
+                                 listLambdas.each { user, lambdas ->
+                                    def lambdasJson = new groovy.json.JsonBuilder(lambdas).toString()
+                                    def ecrJson = new groovy.json.JsonBuilder(listEcr["${user}"]).toString()
+                                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${user}"]]) {
+                                         sh """
+                                                ./rollback_image_to_lambda.sh '${lambdasJson}' '${ecrJson}' '${env.OLD_VERSION_TAG}'
+                                            """
+                                    }
+                                  }
+
+                                 sh """
+                                        ./build_frontend.sh '${env.OLD_VERSION_TAG}' '${env.GIT_INFO}'
+                                    """
                              } catch (Exception e) {
                                  def jsonContent = readFile(successLambdasFile)
                                  pushChatworkMessage("[toall]\n Rollback error: ${jsonContent}")
@@ -150,9 +159,9 @@ pipeline {
                     }
                 }
 
-                // if (fileExists(successLambdasFile)) {
-                //     sh "rm ${successLambdasFile}"
-                // }
+                if (fileExists(successLambdasFile)) {
+                    sh "rm ${successLambdasFile}"
+                }
             }
         }
     }

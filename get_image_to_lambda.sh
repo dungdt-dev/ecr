@@ -4,6 +4,7 @@ set -e
 LIST_LAMBDAS="$1"
 LIST_ECR="$2"
 NEW_VERSION_TAG="$3"
+USER="$4"
 
 echo $LIST_LAMBDAS > lambdas.json
 echo $LIST_ECR > ecr.json
