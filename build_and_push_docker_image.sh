@@ -16,7 +16,8 @@ if [[ ! -f $images_file ]]; then
     echo "[]" > $images_file
 fi
 
-successfulImages=()
+# Đọc danh sách image đã build thành công từ file
+successfulImages=$(jq -c '.' $images_file)
 
 for ecr in "${list_ecr[@]}"; do
     ecr_uri=$(echo "$ecr" | jq -r '.ecr_uri')
@@ -38,12 +39,10 @@ for ecr in "${list_ecr[@]}"; do
     docker push ${ecr_uri}/${repository}:${NEW_VERSION_TAG}
 
     # Thêm image vào danh sách đã build thành công
-    successfulImages+=("${repository}:${NEW_VERSION_TAG}")
+    successfulImages=$(echo $successfulImages | jq --arg image "${repository}:${NEW_VERSION_TAG}" '. += [$image]')
 
-    # Ghi danh sách image vào file JSON
-    successfulImagesJson=$(printf '%s\n' "${successfulImages[@]}" | jq -s '.')
-
-    echo "$successfulImagesJson" > $images_file
+    # Ghi danh sách image vào file JSON (giữ lại các image cũ)
+    echo "$successfulImages" > $images_file
 
     # Remove image tag
     docker rmi ${ecr_uri}/${repository}:${NEW_VERSION_TAG}
