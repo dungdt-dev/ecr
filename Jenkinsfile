@@ -127,7 +127,6 @@ pipeline {
                     switch (env.ERROR_STAGE) {
                         case 'get_image_to_lambda':
                             sh 'chmod +x ./rollback_image_to_lambda.sh'
-                              sh 'chmod +x ./build_frontend.sh'
                             try {
                                  def listLambdas = readJSON file: successLambdasFile
                                  def listEcr = readJSON text: env.LIST_ECR
@@ -141,9 +140,10 @@ pipeline {
                                     }
                                   }
 
-                                 sh """
-                                        ./build_frontend.sh '${env.OLD_VERSION_TAG}' '${env.GIT_INFO}'
-                                    """
+                                sh 'chmod +x ./build_frontend.sh'
+                                sh """
+                                    ./build_frontend.sh '${env.OLD_VERSION_TAG}' '${env.GIT_INFO}'
+                                """
                              } catch (Exception e) {
                                  def jsonContent = readFile(successLambdasFile)
                                  pushChatworkMessage("[toall]\n Rollback error: ${jsonContent}")

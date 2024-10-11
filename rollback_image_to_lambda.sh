@@ -21,7 +21,7 @@ for lambda in "${lambdas[@]}"; do
             repository=$(echo "$matching_ecr" | jq -r '.repository')
         fi
 
-    sleep 10
+    sleep 5
 
     status=$(aws lambda get-function \
                 --function-name $name \
@@ -29,7 +29,7 @@ for lambda in "${lambdas[@]}"; do
 
     if [ "$status" == "InProgress" ]; then
         while [ "$status" == "InProgress" ]; do
-            sleep 10
+            sleep 5
             status=$(aws lambda get-function \
                         --function-name $name \
                         --region $region | jq -r '.Configuration.LastUpdateStatus') || exit 1
