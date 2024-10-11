@@ -135,7 +135,9 @@ pipeline {
                              }
                             break
                     }
-                } else {
+                }
+
+                if (currentBuild.result == 'SUCCESS') {
                     script {
                         pushChatworkMessage('Deploy success')
                         writeFile file: env.VERSION_FILE, text: "${env.NEW_VERSION_TAG.toInteger()}"
