@@ -152,6 +152,10 @@ pipeline {
                     }
                 }
 
+                sh 'chmod +x ./build_frontend.sh'
+                sh """
+                    ./remove_image.sh
+                """
                 if (currentBuild.result == 'SUCCESS') {
                     script {
                         pushChatworkMessage('Deploy success')
