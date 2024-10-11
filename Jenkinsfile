@@ -152,7 +152,7 @@ pipeline {
                     }
                 }
 
-                sh 'chmod +x ./build_frontend.sh'
+                sh 'chmod +x ./remove_image.sh'
                 sh """
                     ./remove_image.sh
                 """
