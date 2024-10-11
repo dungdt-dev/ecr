@@ -3,9 +3,10 @@
 if [[ -f "images.json" ]]; then
     mapfile -t images < <(jq -r '.[]' images.json)
 
-    # Xóa tất cả các image trong danh sách
     for image in "${images[@]}"; do
-        docker rmi $image || true  # Không dừng lại nếu gặp lỗi
+        if [[ "$(docker images -q $image 2> /dev/null)" != "" ]]; then
+            docker rmi $image || true
+        fi
     done
 
     rm -f images.json

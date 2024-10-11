@@ -10,13 +10,11 @@ echo $LIST_ECR > ecr.json
 mapfile -t list_ecr < <(jq -c '.[]' ecr.json)
 rm ecr.json
 
-# Khởi tạo file JSON để lưu trữ các image đã build thành công
 images_file="images.json"
 if [[ ! -f $images_file ]]; then
     echo "[]" > $images_file
 fi
 
-# Đọc danh sách image đã build thành công từ file
 successfulImages=$(jq -c '.' $images_file)
 
 for ecr in "${list_ecr[@]}"; do
@@ -24,7 +22,6 @@ for ecr in "${list_ecr[@]}"; do
     repository=$(echo "$ecr" | jq -r '.repository')
     region=$(echo "$ecr" | jq -r '.region')
 
-    # Kiểm tra nếu image đã tồn tại
     if [[ "$(docker images -q ${repository}:${NEW_VERSION_TAG} 2> /dev/null)" == "" ]]; then
         docker build -t ${repository}:${NEW_VERSION_TAG} .
     fi
@@ -38,10 +35,7 @@ for ecr in "${list_ecr[@]}"; do
     # Push Docker image to Amazon ECR
     docker push ${ecr_uri}/${repository}:${NEW_VERSION_TAG}
 
-    # Thêm image vào danh sách đã build thành công
     successfulImages=$(echo $successfulImages | jq --arg image "${repository}:${NEW_VERSION_TAG}" '. += [$image]')
-
-    # Ghi danh sách image vào file JSON (giữ lại các image cũ)
     echo "$successfulImages" > $images_file
 
     # Remove image tag
