@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Đọc file images.json
 if [[ -f "images.json" ]]; then
     mapfile -t images < <(jq -r '.[]' images.json)
 
@@ -9,6 +8,5 @@ if [[ -f "images.json" ]]; then
         docker rmi $image || true  # Không dừng lại nếu gặp lỗi
     done
 
-    # Xóa file sau khi hoàn thành
     rm -f images.json
 fi

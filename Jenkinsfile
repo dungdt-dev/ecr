@@ -152,10 +152,10 @@ pipeline {
                     }
                 }
 
-                sh 'chmod +x ./remove_image.sh'
-                sh """
-                    ./remove_image.sh
-                """
+                // remove images
+                sh 'chmod +x ./remove_images.sh'
+                sh './remove_images.sh'
+
                 if (currentBuild.result == 'SUCCESS') {
                     script {
                         pushChatworkMessage('Deploy success')
