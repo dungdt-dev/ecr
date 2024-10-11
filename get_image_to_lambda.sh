@@ -6,10 +6,14 @@ LIST_ECR="$2"
 NEW_VERSION_TAG="$3"
 
 echo $LIST_LAMBDAS > lambdas.json
-mapfile -t lambdas < <(jq -c '.[]' lambdas.json)
-rm lambdas.json
-
 echo $LIST_ECR > ecr.json
+mapfile -t lambdas < <(jq -c '.[]' lambdas.json)
+
+if [ -f success_lambdas.json ]; then
+    existingJson=$(cat success_lambdas.json)
+else
+    existingJson='{}'
+fi
 
 successfulUpdates=()
 
@@ -31,7 +35,10 @@ for lambda in "${lambdas[@]}"; do
     successfulUpdates+=("$lambda")
     successfulUpdatesJson=$(printf '%s\n' "${successfulUpdates[@]}" | jq -s '.')
 
-    echo "$successfulUpdatesJson" > success_lambdas.json
+    updatedJson=$(echo "$existingJson" | jq --arg user "$USER" --argjson lambdas "$successfulUpdatesJson" \
+                '.[$user] = $lambdas')
+    echo "$updatedJson" > success_lambdas.json
 done
 
+rm lambdas.json
 rm ecr.json
