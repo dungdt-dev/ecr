@@ -61,8 +61,15 @@ exec_result=$(docker exec front-end sh -c "
                         fi
             ") || exec_result=1
 
+# Di chuyển file index.html ra ngoài
+docker cp front-end:/var/task/deploy/index.html ./index.html
+
+# Upload file lên S3
+aws s3 cp ./index.html s3://dungdt-test-s3/index.html --region ap-southeast-1
+
 docker rm -f front-end
 docker rmi front-end:${NEW_VERSION_TAG}
+rm -f ./index.html
 
 # error handling
 if [ $exec_result -ne 0 ]; then

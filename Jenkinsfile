@@ -103,9 +103,11 @@ pipeline {
                      setup()
 
                      sh 'chmod +x ./build_frontend.sh'
+                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "aws-lambda"]]) {
                         sh """
                                ./build_frontend.sh '${env.NEW_VERSION_TAG}' '${env.GIT_INFO}'
                            """
+                       }
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         env.ERROR_STAGE = 'build_frontend'
