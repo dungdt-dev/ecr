@@ -33,11 +33,17 @@ exec_result=$(docker exec front-end sh -c "
                           git push -f origin ${NEW_VERSION_TAG}:${BRANCH}
                         else
                           git checkout ${BRANCH} &&
+                          cd /var/task/deploy &&
+                          for item in *; do
+                            if [ \"\$item\" != \".git\" ]; then
+                                rm -rf \"\$item\"
+                            fi
+                          done
+
                           # Copy files from build to deploy folder
                           cd /var/task &&
                           cp -r build/* deploy/ &&
                           cd deploy &&
-
                           # Thay thế URL trong index.html
                           if [[ -f index.html ]]; then
                             sed -i 's#\(css/.*\.css\)#https://cdn.jsdelivr.net/gh/dungdt-dev/js-delivery@$NEW_VERSION_TAG/\1#g' index.html &&
