@@ -27,6 +27,7 @@ exec_result=$(docker exec front-end sh -c "
                         git remote -v &&
                         git fetch &&
                         git checkout ${BRANCH} &&
+                        git fetch --tags &&
                         # Check if tag with NEW_VERSION_TAG exists
                         if git tag -l | grep -q \"^${NEW_VERSION_TAG}\$\"; then
                           git reset --hard ${NEW_VERSION_TAG} &&
