@@ -2,32 +2,32 @@ pipeline {
     agent any
 
     stages {
-        // stage('Build And Push Docker Image') {
-        //     steps {
-        //         script {
-        //             try {
-        //              pushChatworkMessage('Start Build And Push Docker Image')
-        //              setup()
+        stage('Build And Push Docker Image') {
+            steps {
+                script {
+                    try {
+                     pushChatworkMessage('Start Build And Push Docker Image')
+                     setup()
 
-        //              sh 'chmod +x ./build_and_push_docker_image.sh'
-        //              def listEcr = readJSON text: env.LIST_ECR
-        //              listEcr.each { user, ecr ->
-        //                  def ecrJson = new groovy.json.JsonBuilder(ecr).toString()
-        //                  withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${user}"]]) {
-        //                     sh """
-        //                            ./build_and_push_docker_image.sh '${ecrJson}' '${env.NEW_VERSION_TAG}'
-        //                        """
-        //                  }
-        //              }
+                     sh 'chmod +x ./build_and_push_docker_image.sh'
+                     def listEcr = readJSON text: env.LIST_ECR
+                     listEcr.each { user, ecr ->
+                         def ecrJson = new groovy.json.JsonBuilder(ecr).toString()
+                         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${user}"]]) {
+                            sh """
+                                   ./build_and_push_docker_image.sh '${ecrJson}' '${env.NEW_VERSION_TAG}'
+                               """
+                         }
+                     }
 
-        //             } catch (Exception e) {
-        //                 currentBuild.result = 'FAILURE'
-        //                 env.ERROR_STAGE = 'build_and_push_docker_image'
-        //                 env.EXCEPTION_MESSAGE = e.message
-        //             }
-        //         }
-        //     }
-        // }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        env.ERROR_STAGE = 'build_and_push_docker_image'
+                        env.EXCEPTION_MESSAGE = e.message
+                    }
+                }
+            }
+        }
 
         // stage('Get Image to Lambda test') {
         //     when {
@@ -56,39 +56,39 @@ pipeline {
         //     }
         // }
 
-        // stage('Get Image to Lambda') {
-        //     when {
-        //         expression {
-        //             return currentBuild.result != 'FAILURE'
-        //         }
-        //     }
-        //     steps {
-        //         script {
-        //             try {
-        //              pushChatworkMessage('Start Get Image to Lambda')
-        //              setup()
+        stage('Get Image to Lambda') {
+            when {
+                expression {
+                    return currentBuild.result != 'FAILURE'
+                }
+            }
+            steps {
+                script {
+                    try {
+                     pushChatworkMessage('Start Get Image to Lambda')
+                     setup()
 
-        //              sh 'chmod +x ./get_image_to_lambda.sh'
-        //              def listLambdas = readJSON text: env.LIST_LAMBDAS
-        //              def listEcr = readJSON text: env.LIST_ECR
-        //              listLambdas.each { user, lambdas ->
-        //                 def lambdasJson = new groovy.json.JsonBuilder(lambdas).toString()
-        //                 def ecrJson = new groovy.json.JsonBuilder(listEcr["${user}"]).toString()
-        //                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${user}"]]) {
-        //                      sh """
-        //                             ./get_image_to_lambda.sh '${lambdasJson}' '${ecrJson}' '${env.NEW_VERSION_TAG}' '${user}'
-        //                         """
-        //                 }
-        //               }
+                     sh 'chmod +x ./get_image_to_lambda.sh'
+                     def listLambdas = readJSON text: env.LIST_LAMBDAS
+                     def listEcr = readJSON text: env.LIST_ECR
+                     listLambdas.each { user, lambdas ->
+                        def lambdasJson = new groovy.json.JsonBuilder(lambdas).toString()
+                        def ecrJson = new groovy.json.JsonBuilder(listEcr["${user}"]).toString()
+                        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${user}"]]) {
+                             sh """
+                                    ./get_image_to_lambda.sh '${lambdasJson}' '${ecrJson}' '${env.NEW_VERSION_TAG}' '${user}'
+                                """
+                        }
+                      }
 
-        //             } catch (Exception e) {
-        //                 currentBuild.result = 'FAILURE'
-        //                 env.ERROR_STAGE = 'get_image_to_lambda'
-        //                 env.EXCEPTION_MESSAGE = e.message
-        //             }
-        //         }
-        //     }
-        // }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        env.ERROR_STAGE = 'get_image_to_lambda'
+                        env.EXCEPTION_MESSAGE = e.message
+                    }
+                }
+            }
+        }
 
         stage('Build Frontend') {
             when {
