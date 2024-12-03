@@ -55,6 +55,7 @@ pipeline {
         //         }
         //     }
         // }
+        
 
         stage('Get Image to Lambda') {
             when {
