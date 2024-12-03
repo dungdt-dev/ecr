@@ -213,7 +213,7 @@ def setup() {
 
     def response = httpRequest(
         url: "http://localhost:8080/job/${env.JOB_NAME}/${currentBuild.number}/api/json",
-        authentication: 'dungdt'
+        authentication: 'jenkins'
     )
     def json = readJSON text: response.content
     def causes = json.actions.find { it._class == "hudson.model.CauseAction" }?.causes
