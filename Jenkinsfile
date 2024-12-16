@@ -118,58 +118,56 @@ pipeline {
 
     }
 
-    // post {
-    //     always {
-    //         script {
-    //             def successLambdasFile = 'success_lambdas.json'
-    //             if (currentBuild.result == 'FAILURE') {
-    //                 pushChatworkMessage('Error in stage ' + env.ERROR_STAGE + ': ' + env.EXCEPTION_MESSAGE)
+    post {
+        always {
+            script {
+                def successLambdasFile = 'success_lambdas.json'
+                if (currentBuild.result == 'FAILURE') {
+                    pushChatworkMessage('Error in stage ' + env.ERROR_STAGE + ': ' + env.EXCEPTION_MESSAGE)
 
-    //                 switch (env.ERROR_STAGE) {
-    //                     case 'get_image_to_lambda':
-    //                         sh 'chmod +x ./rollback_image_to_lambda.sh'
-    //                         try {
-    //                              def listLambdas = readJSON file: successLambdasFile
-    //                              def listEcr = readJSON text: env.LIST_ECR
-    //                              listLambdas.each { user, lambdas ->
-    //                                 def lambdasJson = new groovy.json.JsonBuilder(lambdas).toString()
-    //                                 def ecrJson = new groovy.json.JsonBuilder(listEcr["${user}"]).toString()
-    //                                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${user}"]]) {
-    //                                      sh """
-    //                                             ./rollback_image_to_lambda.sh '${lambdasJson}' '${ecrJson}' '${env.OLD_VERSION_TAG}'
-    //                                         """
-    //                                 }
-    //                               }
+                    switch (env.ERROR_STAGE) {
+                        case 'get_image_to_lambda':
+                            sh 'chmod +x ./rollback_image_to_lambda.sh'
+                            try {
+                                 def listLambdas = readJSON file: successLambdasFile
+                                 listLambdas.each { user, lambdas ->
+                                    def lambdasJson = new groovy.json.JsonBuilder(lambdas).toString()
+                                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${user}"]]) {
+                                         sh """
+                                                ./rollback_image_to_lambda.sh '${lambdasJson}' '${env.OLD_VERSION_TAG}'
+                                            """
+                                    }
+                                  }
 
-    //                             sh 'chmod +x ./build_frontend.sh'
-    //                             sh """
-    //                                 ./build_frontend.sh '${env.OLD_VERSION_TAG}' '${env.GIT_INFO}'
-    //                             """
-    //                          } catch (Exception e) {
-    //                              def jsonContent = readFile(successLambdasFile)
-    //                              pushChatworkMessage("[toall]\n Rollback error: ${jsonContent}")
-    //                          }
-    //                         break
-    //                 }
-    //             }
+                                sh 'chmod +x ./build_frontend.sh'
+                                sh """
+                                    ./build_frontend.sh '${env.OLD_VERSION_TAG}' '${env.GIT_INFO}'
+                                """
+                             } catch (Exception e) {
+                                 def jsonContent = readFile(successLambdasFile)
+                                 pushChatworkMessage("[toall]\n Rollback error: ${jsonContent}")
+                             }
+                            break
+                    }
+                }
 
-    //             // remove images
-    //             sh 'chmod +x ./remove_images.sh'
-    //             sh './remove_images.sh'
+                // remove images
+                sh 'chmod +x ./remove_images.sh'
+                sh './remove_images.sh'
 
-    //             if (currentBuild.result == 'SUCCESS') {
-    //                 script {
-    //                     pushChatworkMessage('Deploy success')
-    //                     writeFile file: env.VERSION_FILE, text: "${env.NEW_VERSION_TAG.toInteger()}"
-    //                 }
-    //             }
+                if (currentBuild.result == 'SUCCESS') {
+                    script {
+                        pushChatworkMessage('Deploy success')
+                        writeFile file: env.VERSION_FILE, text: "${env.NEW_VERSION_TAG.toInteger()}"
+                    }
+                }
 
-    //             if (fileExists(successLambdasFile)) {
-    //                 sh "rm ${successLambdasFile}"
-    //             }
-    //         }
-    //     }
-    // }
+                if (fileExists(successLambdasFile)) {
+                    sh "rm ${successLambdasFile}"
+                }
+            }
+        }
+    }
 
 }
 
