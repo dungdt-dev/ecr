@@ -71,13 +71,11 @@ pipeline {
 
                      sh 'chmod +x ./get_image_to_lambda.sh'
                      def listLambdas = readJSON text: env.LIST_LAMBDAS
-                     def listEcr = readJSON text: env.LIST_ECR
                      listLambdas.each { user, lambdas ->
                         def lambdasJson = new groovy.json.JsonBuilder(lambdas).toString()
-                        def ecrJson = new groovy.json.JsonBuilder(listEcr["${user}"]).toString()
                         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${user}"]]) {
                              sh """
-                                    ./get_image_to_lambda.sh '${lambdasJson}' '${ecrJson}' '${env.NEW_VERSION_TAG}' '${user}'
+                                    ./get_image_to_lambda.sh '${lambdasJson}' '${env.NEW_VERSION_TAG}' '${user}'
                                 """
                         }
                       }
